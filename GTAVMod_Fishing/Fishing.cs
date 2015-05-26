@@ -62,6 +62,7 @@ namespace GTAVMod_Fishing
                 new Fish("Wallet", 0),
                 new Fish("Bike", 0),
                 new Fish("Pizza", 0),
+                new Fish("Toilet", 0),
             };
 
             inventory = new PlayerInventory();
@@ -206,6 +207,10 @@ namespace GTAVMod_Fishing
                     {
                         World.CreateProp(new Model("prop_pizza_box_01"), Game.Player.Character.Position, true, false);
                         Game.Player.Character.Health = Game.Player.Character.MaxHealth;
+                    }
+                    else if (caughtFish.Name == "Toilet")
+                    {
+                        World.CreateProp(new Model("prop_toilet_01"), Game.Player.Character.Position, true, false);
                     }
                     UI.ShowSubtitle("You've caught a " + caughtFish.Name, 5000);
                 }
