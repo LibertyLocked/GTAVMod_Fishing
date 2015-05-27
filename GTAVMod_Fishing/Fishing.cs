@@ -34,7 +34,7 @@ namespace GTAVMod_Fishing
         const float SELLINGSPOT_RANGE = 5f;
 
         Prop fishingRod;
-        Vector3 fishingSpotPos = new Vector3(-1849.973f, -1249.577f, 8.616f);
+        Vector3[] fishingSpotPos;
         Vector3 sellingSpotPos = new Vector3(-1835.398f,-1206.695f, 14.305f);
         UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
         Keys fishingKey = Keys.F5;
@@ -53,6 +53,13 @@ namespace GTAVMod_Fishing
         public Fishing()
         {
             SetupAvailableItems();
+            fishingSpotPos = new Vector3[]
+            {
+                // these 3 covers Del Perro Pier
+                new Vector3(-1849.973f, -1249.577f, 8.616f),
+                new Vector3(-1823.583f, -1266.619f, 8.619f),
+                new Vector3(-1840.462f, -1256.359f, 8.616f),
+            };
 
             inventory = new PlayerInventory();
             rng = new Random();
@@ -203,7 +210,11 @@ namespace GTAVMod_Fishing
 
         bool IsPlayerInFishingArea(Ped playerPed)
         {
-            return playerPed.IsInRangeOf(fishingSpotPos, FISHINGSPOT_RANGE);
+            foreach (Vector3 v in fishingSpotPos)
+            {
+                if (playerPed.IsInRangeOf(v, FISHINGSPOT_RANGE)) return true;
+            }
+            return false;
             //return playerPos.DistanceTo(fishingSpotPos) <= FISHINGSPOT_RANGE;
         }
 
