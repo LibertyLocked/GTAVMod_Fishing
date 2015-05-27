@@ -1,15 +1,15 @@
 ﻿/*
  * Fishing Mod
  * Author: libertylocked
- * Version: 0.2.1
+ * Version: 0.2.2
  * License: GPLv2
 */
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Drawing;
 using GTA;
 using GTA.Math;
 using GTA.Native;
@@ -159,6 +159,7 @@ namespace GTAVMod_Fishing
 
         void UpdateMinigame()
         {
+            OutputArgument output = new OutputArgument();
             minigameTimer += Game.LastFrameTime;
             if (minigameTimer > secondsToCatchFish)
             {
@@ -215,40 +216,58 @@ namespace GTAVMod_Fishing
         void SetupAvailableItems()
         {
             NormalFishes = new Fish[] 
-            {
+            { // count: 17
                 new Fish("Shrimp", 1),
                 new Fish("Spotted Bay Bass", 10),
                 new Fish("Barred Sand Bass", 20),
                 new Fish("Barred Surf Perch", 20),
                 new Fish("Kelp Bass", 30),
                 new Fish("White Sea Bass", 40),
+                new Fish("Spotfin Croaker", 45),
                 new Fish("California Halibut", 50),
                 new Fish("Pacific Barracuda", 60),
                 new Fish("Swordfish", 70),
+                new Fish("California Corbina", 75),
                 new Fish("Red Lionfish", 80),
                 new Fish("American Sole", 90),
                 new Fish("Yellowtail", 100),
+                new Fish("Steelhead", 150),
+                new Fish("Walleye Surfperch", 200),
                 new Fish("Goldfish", 500),
             };
             SpecialItems = new FishItem[]
-            {
+            { // count: 25
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
-                new FishItem("Wallet", 
-                    Rarity.Common, delegate { Game.Player.Money += 100 + rng.Next(900);}),
                 // peds
                 new FishItem("Dead Hooker", new PedHash[]{PedHash.Hooker01SFY, PedHash.Hooker02SFY, PedHash.Hooker03SFY}, 
                     Rarity.Common, new ItemAction(x => ((Ped)x).Kill())),
                 new FishItem("Dead Johnny", new PedHash[]{PedHash.JohnnyKlebitz},
                     Rarity.Common, new ItemAction(x => ((Ped)x).Kill())),
+                new FishItem("Zombie", new PedHash[]{PedHash.Zombie01},
+                    Rarity.Common, new ItemAction(x => ((Ped)x).Task.FightAgainst(playerPed))),
                 // vehs
                 new FishItem("Bike", new VehicleHash[]{VehicleHash.Bmx, VehicleHash.TriBike, VehicleHash.Cruiser, VehicleHash.Scorcher, VehicleHash.Fixter}, 
                     Rarity.Common, null),
+                new FishItem("Caddy", new VehicleHash[]{VehicleHash.Caddy, VehicleHash.Caddy2}, 
+                    Rarity.Common, null),
+                new FishItem("Faggio", new VehicleHash[]{VehicleHash.Faggio2}, 
+                    Rarity.Common, null),
+                new FishItem("Blazer", new VehicleHash[]{VehicleHash.Blazer, VehicleHash.Blazer2, VehicleHash.Blazer3},
+                    Rarity.Common, null),
                 // props
+                new FishItem("Wallet", new string[]{"prop_ld_wallet_01", "prop_ld_wallet_02"},
+                    Rarity.Common, delegate { Game.Player.Money += 100 + rng.Next(900);}),
                 new FishItem("Pizza", new string[]{"prop_pizza_box_01", "prop_pizza_box_02"}, 
                     Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
                 new FishItem("Sandwich", new string[]{"prop_sandwich_01"},
+                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                new FishItem("Donut", new string[]{"prop_donut_01", "prop_donut_02"},
+                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                new FishItem("Hotdog", new string[]{"prop_cs_hotdog_01", "prop_cs_hotdog_02"},
+                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                new FishItem("Taco", new string[]{"prop_taco_01", "prop_taco_02"},
                     Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
                 new FishItem("Screwdriver", new string[]{"prop_tool_screwdvr01", "prop_tool_screwdvr02", "prop_tool_screwdvr03"}, 
                     Rarity.Common, null),
@@ -266,6 +285,12 @@ namespace GTAVMod_Fishing
                     Rarity.Common, null),
                 new FishItem("DVD Player", new string[]{"prop_cs_dvd_player"},
                     Rarity.Common, null),
+                new FishItem("Guitar", new string[]{"prop_acc_guitar_01"},
+                    Rarity.Common, null),
+                new FishItem("Bong", new string[]{"prop_bong_01"},
+                    Rarity.Common, null),
+                new FishItem("Body Armor", new string[]{"prop_bodyarmour_06"},
+                    Rarity.Common, delegate { Game.Player.Character.Armor = 100;})
             };
         }
     }
@@ -422,7 +447,7 @@ namespace GTAVMod_Fishing
                 // try to fix entity if it's stuck
                 if (ent.Velocity == Vector3.Zero)
                 {
-                    //ent.Delete();
+                    ent.Position = playerPed.Position; // dirty fix
                 }
 
                 if (Fishing.DebugMode)
