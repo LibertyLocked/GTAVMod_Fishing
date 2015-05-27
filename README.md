@@ -30,5 +30,5 @@ This mod allows the player to fish at Del Perro Pier. You can sell the fish you'
 1. Sometimes props get stuck in air. Shoot them and they will fall.
 
 ##CHANGELOG:
-v0.2: Better entity spawn with physics. Added more fish and fun items.
-v0.2.1: Added actual fish models.
+- v0.2: Better entity spawn with physics. Added more fish and fun items.
+- v0.2.1: Added actual fish models.
