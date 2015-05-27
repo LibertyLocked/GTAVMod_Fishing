@@ -146,8 +146,8 @@ namespace GTAVMod_Fishing
                 fishingRod.Detach();
                 fishingRod.Delete();
             }
-            fishingRod = World.CreateProp(new Model("prop_fishing_rod_01"), Vector3.Zero, false, true);
-            fishingRod.AttachTo(playerPed, playerPed.PedBoneIndex(BONE_LEFTHAND), new Vector3(0.13f, 0.1f, 0.01f), new Vector3(-100f, 30f, 0f));
+            fishingRod = World.CreateProp(new Model("prop_fishing_rod_01"), Vector3.Zero, false, false);
+            fishingRod.AttachTo(playerPed, playerPed.PedBoneIndex(BONE_LEFTHAND), new Vector3(0.13f, 0.1f, 0.01f), new Vector3(180f, 90f, 70f));
             if (DebugMode)
                 secondsToCatchFish = 1;
             else
@@ -410,7 +410,7 @@ namespace GTAVMod_Fishing
                 else
                 {
                     string propStrSelected = propStrs[rng.Next(propStrs.Length)];
-                    ent = World.CreateProp(new Model(propStrSelected), spawnPos, false, false);
+                    ent = World.CreateProp(new Model(propStrSelected), spawnPos, true, false);
                     vel = Game.Player.Character.Position - spawnPos;
                     //ent.FreezePosition = false;
                     vel.Normalize();
