@@ -1,7 +1,7 @@
 # GTAVMod_Fishing
 Note: This mod is currently in development. There isn't much content at the moment. I'll be adding more stuff to it.
 
-This mod allows the player to fish at Del Perro Pier. You can sell the fish you've caught as well. Currently there are 13 types of fish and 15 secret items for you to catch!
+This mod allows the player to fish at Del Perro Pier. You can sell the fish you've caught as well. Currently there are 17 types of fish and 25 secret items for you to catch!
 
 ##REQUIREMENTS:
 1. [ScriptHookV](http://gtaforums.com/topic/788343-vrel-script-hook-v/)
@@ -19,16 +19,20 @@ This mod allows the player to fish at Del Perro Pier. You can sell the fish you'
 5. PROFIT
 
 ##TODO:
-1. More fish to catch
-2. More funny stuff to catch (suggestions?)
-3. More places to fish
-4. Require player to buy fishing rods and baits
-5. Fishing minigame
-6. Use rope instead of spawning stuff in player's face
-
-##KNOWN ISSUES:
-1. Sometimes props get stuck in air. Shoot them and they will fall.
+1. More fish to catch 
+2. More funny stuff to catch (suggestions?) 
+3. More places to fish 
+4. Require player to buy fishing rods and baits 
+5. Fishing minigame 
+6. Use rope physics 
 
 ##CHANGELOG:
-- v0.2: Better entity spawn with physics. Added more fish and fun items.
-- v0.2.1: Added actual fish models.
+- v0.2: Better entity spawn with physics. Added more fish and fun items. 
+- v0.2.1: Added actual fish models. 
+- v0.2.2: Fixed prop being stuck (sort of). Added more fish and items.
+
+Topic on GTAForums:
+http://www.gtaforums.com/topic/796967-vwip-fishing-mod
+
+Topic on GTA5-Mods:
+https://www.gta5-mods.com/scripts/fishing-mod-libertylocked
