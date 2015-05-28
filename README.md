@@ -31,8 +31,6 @@ This mod allows the player to fish at Del Perro Pier. You can sell the fish you'
 - v0.2.1: Added actual fish models. 
 - v0.2.2: Fixed prop being stuck (sort of). Added more fish and items.
 
-Topic on GTAForums:
-http://www.gtaforums.com/topic/796967-vwip-fishing-mod
+[Topic on GTAForums](http://www.gtaforums.com/topic/796967-vwip-fishing-mod)
 
-Topic on GTA5-Mods:
-https://www.gta5-mods.com/scripts/fishing-mod-libertylocked
+[Topic on GTA5-Mods](https://www.gta5-mods.com/scripts/fishing-mod-libertylocked)
