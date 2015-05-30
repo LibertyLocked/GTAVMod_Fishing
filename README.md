@@ -1,4 +1,4 @@
-# Fishing
+# Fishing Mod
 Note: This mod is currently work in progress. I'll be adding more content to it. 
 
 This mod allows the player to fish at Del Perro Pier, or on any boat! You can sell the fish you've caught as well. Currently there are 20 types of fish and 31 secret items for you to catch!
