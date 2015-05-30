@@ -1,7 +1,7 @@
 ﻿/*
  * Fishing Mod
  * Author: libertylocked
- * Version: 0.2.2
+ * Version: 0.2.3
  * License: GPLv2
 */
 using System;
@@ -26,49 +26,37 @@ namespace GTAVMod_Fishing
 
     public class Fishing : Script
     {
-        public static bool DebugMode = false;
+        public static bool DebugMode = false; // turn this off on release
         public static int DebugIndex = 0;
-
-        const int BONE_LEFTHAND = 0x49D9;
-        const float FISHINGSPOT_RANGE = 10f;
-        const float SELLINGSPOT_RANGE = 5f;
+        const int _BONE_LEFTHAND = 0x49D9;
+        const float _FISHINGBOAT_RANGE = 10f;
+        const float _SELLINGSPOT_RANGE = 5f;
+        const float _MINIGAME_FRAMETIME = 0.034f;
 
         Prop fishingRod;
         Vector3[] fishingSpotPos;
-        Vector3 sellingSpotPos = new Vector3(-1835.398f,-1206.695f, 14.305f);
+        Vector3 sellingSpotPos;
+        bool fishAnywhere = false;
         UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
-        Keys fishingKey = Keys.F5;
+        Keys fishingKey;
+        int fishingButton;
         bool isFishing = false;
         PlayerInventory inventory;
         Fish[] NormalFishes;
         FishItem[] SpecialItems;
         Ped playerPed;
 
-        const float MINIGAME_FRAMETIME = 0.034f;
         float minigameTimer = 0;
         int secondsToCatchFish = 0;
         Random rng;
-        //UIRectangle recBack, recPlayer;
 
         public Fishing()
         {
             SetupAvailableItems();
-            fishingSpotPos = new Vector3[]
-            {
-                // these 3 covers Del Perro Pier
-                new Vector3(-1849.973f, -1249.577f, 8.616f),
-                new Vector3(-1823.583f, -1266.619f, 8.619f),
-                new Vector3(-1840.462f, -1256.359f, 8.616f),
-            };
-
+            SetupLocations();
+            ParseSettings();
             inventory = new PlayerInventory();
             rng = new Random();
-
-            //recBack = new UIRectangle(new Point(100, 600), new Size(1080, 50), Color.FromArgb(100, 255, 255, 255));
-            //recPlayer = new UIRectangle(new Point(640 - 400 / 2, 600), new Size(400, 50), Color.FromArgb(100, 0, 255, 0));
-
-            ScriptSettings settings = ScriptSettings.Load(@".\scripts\Fishing.ini");
-            fishingKey = (Keys)Enum.Parse(typeof(Keys), settings.GetValue("Config", "FishingKey", "F5"), true);
 
             this.Tick += OnTick;
             this.KeyDown += OnKeyDown;
@@ -77,63 +65,71 @@ namespace GTAVMod_Fishing
         void OnTick(object sender, EventArgs e)
         {
             Player player = Game.Player;
+            if (player != null) playerPed = player.Character;
             if (player != null && player.CanControlCharacter && player.IsAlive && player.Character != null)
             {
-                if (IsPlayerInFishingArea(player.Character) && !isFishing)
+                if (!playerPed.IsInVehicle())
                 {
-                    promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
-                    promtText.Draw();
-                }
-                if (IsPlayerInSellingArea(player.Character) && !isFishing)
-                {
-                    promtText.Caption = "Press " + fishingKey.ToString() + " to sell fish";
-                    promtText.Draw();
-                }
+                    if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
-                if (isFishing)
-                {
-                    Function.Call(Hash.HIDE_HUD_AND_RADAR_THIS_FRAME);
-                    UpdateMinigame();
+                    if ((IsPedInFishingArea(playerPed) || IsPedNearBoat(playerPed))
+                        && !isFishing && !fishAnywhere)
+                    {
+                        promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
+                        promtText.Draw();
+                    }
+                    if (IsPedInSellingArea(playerPed) && !isFishing)
+                    {
+                        promtText.Caption = "Press " + fishingKey.ToString() + " to sell fish";
+                        promtText.Draw();
+                    }
+
+                    if (isFishing)
+                    {
+                        Function.Call(Hash.HIDE_HUD_AND_RADAR_THIS_FRAME);
+                        UpdateMinigame();
+                    }
                 }
             }
         }
 
         void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == fishingKey)
+            if (e.KeyCode == fishingKey) FishingKeyPressed();
+        }
+
+        void FishingKeyPressed()
+        {
+            if (IsPedInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) &&
+                (!Game.Player.Character.IsInVehicle() && Function.Call<bool>(Hash.CAN_PLAYER_START_MISSION, Game.Player)))
             {
-                if (IsPlayerInFishingArea(Game.Player.Character))
+                if (isFishing)
                 {
-                    if (isFishing)
-                    {
-                        StopFishing();
-                    }
-                    else
-                    {
-                        StartFishing();
-                    }
+                    StopFishing();
                 }
-                else if (IsPlayerInSellingArea(Game.Player.Character))
+                else
                 {
-                    // Sell fish
-                    int sellAmount = inventory.SellAllFish();
-                    if (sellAmount > 0)
-                    {
-                        Game.Player.Money += sellAmount;
-                        UI.ShowSubtitle("You've sold all your fish for $" + sellAmount);
-                    }
-                    else
-                    {
-                        UI.ShowSubtitle("You haven't caught any fish yet!");
-                    }
+                    StartFishing();
                 }
             }
-
+            else if (IsPedInSellingArea(Game.Player.Character))
+            {
+                // Sell fish
+                int sellAmount = inventory.SellAllFish();
+                if (sellAmount > 0)
+                {
+                    Game.Player.Money += sellAmount;
+                    UI.ShowSubtitle("You've sold all your fish for $" + sellAmount);
+                }
+                else
+                {
+                    UI.ShowSubtitle("You haven't caught any fish yet!");
+                }
+            }
         }
 
         void StopFishing()
         {
-            playerPed = Game.Player.Character;
             playerPed.Task.ClearAllImmediately();
             if (fishingRod != null)
             {
@@ -145,21 +141,20 @@ namespace GTAVMod_Fishing
 
         void StartFishing()
         {
-            playerPed = Game.Player.Character;
             playerPed.Task.ClearAllImmediately();
-            playerPed.Task.PlayAnimation("amb@world_human_stand_fishing@idle_a", "idle_c", 8f, -1, true, -1);
+            playerPed.Task.PlayAnimation("amb@world_human_stand_fishing@idle_a", "idle_c", 8f, -1, true, -1); // thanks jedijosh920 for this
             if (fishingRod != null)
             {
                 fishingRod.Detach();
                 fishingRod.Delete();
             }
             fishingRod = World.CreateProp(new Model("prop_fishing_rod_01"), Vector3.Zero, false, false);
-            fishingRod.AttachTo(playerPed, playerPed.PedBoneIndex(BONE_LEFTHAND), new Vector3(0.13f, 0.1f, 0.01f), new Vector3(180f, 90f, 70f));
+            fishingRod.AttachTo(playerPed, playerPed.PedBoneIndex(_BONE_LEFTHAND), new Vector3(0.13f, 0.1f, 0.01f), new Vector3(180f, 90f, 70f));
             if (DebugMode)
                 secondsToCatchFish = 1;
             else
                 secondsToCatchFish = 5 + rng.Next(10);
-            UI.ShowSubtitle("Wait for it...", 10000);
+            UI.ShowSubtitle("Wait for it...", 5000);
             isFishing = true;
             minigameTimer = 0; // reset timer
         }
@@ -188,66 +183,51 @@ namespace GTAVMod_Fishing
                 else
                 {
                     // caught regular fish
-                    // spawn a fish
-                    Vector3 vel = playerPed.ForwardVector * -1;
-                    Vector3 spawnPos = playerPed.Position + playerPed.ForwardVector * 20;
-                    Ped fish = World.CreatePed(new Model(PedHash.Fish), spawnPos);
-                    vel *= 34f;
-                    vel.Z = 7f;
-                    fish.Velocity = vel;
-
                     Fish caughtFish = NormalFishes[rng.Next(NormalFishes.Length)];
                     inventory.AddFish(caughtFish);
+
+                    // spawn a fish
+                    caughtFish.Spawn();
+                    //Vector3 vel = playerPed.ForwardVector * -1;
+                    //Vector3 spawnPos = playerPed.Position + playerPed.ForwardVector * 20;
+                    //Ped fish = World.CreatePed(new Model(PedHash.Fish), spawnPos);
+                    //vel *= 34f;
+                    //vel.Z = 7f;
+                    //fish.Velocity = vel;
+
                     UI.ShowSubtitle("You've caught a " + caughtFish.Name + ", worth $" + caughtFish.Price, 5000);
                 }
                 StopFishing();
             }
-            //if (minigameTimer >= MINIGAME_FRAMETIME)
-            //{
-            //    minigameTimer -= Game.LastFrameTime;
-            //}
-        }
-
-        bool IsPlayerInFishingArea(Ped playerPed)
-        {
-            foreach (Vector3 v in fishingSpotPos)
-            {
-                if (playerPed.IsInRangeOf(v, FISHINGSPOT_RANGE)) return true;
-            }
-            return false;
-            //return playerPos.DistanceTo(fishingSpotPos) <= FISHINGSPOT_RANGE;
-        }
-
-        bool IsPlayerInSellingArea(Ped playerPed)
-        {
-            return playerPed.IsInRangeOf(sellingSpotPos, SELLINGSPOT_RANGE);
-            //return playerPos.DistanceTo(sellingSpotPos) <= SELLINGSPOT_RANGE;
         }
 
         void SetupAvailableItems()
         {
             NormalFishes = new Fish[] 
-            { // count: 17
-                new Fish("Shrimp", 1),
-                new Fish("Spotted Bay Bass", 10),
-                new Fish("Barred Sand Bass", 20),
-                new Fish("Barred Surf Perch", 20),
-                new Fish("Kelp Bass", 30),
-                new Fish("White Sea Bass", 40),
-                new Fish("Spotfin Croaker", 45),
-                new Fish("California Halibut", 50),
-                new Fish("Pacific Barracuda", 60),
-                new Fish("Swordfish", 70),
-                new Fish("California Corbina", 75),
-                new Fish("Red Lionfish", 80),
-                new Fish("American Sole", 90),
-                new Fish("Yellowtail", 100),
-                new Fish("Steelhead", 150),
-                new Fish("Walleye Surfperch", 200),
-                new Fish("Goldfish", 500),
+            { // count: 20
+                new Fish("Shrimp", 1, Rarity.Common),
+                new Fish("Spotted Bay Bass", 10, Rarity.Common),
+                new Fish("Blue Rockfish", 15, Rarity.Common),
+                new Fish("Barred Sand Bass", 20, Rarity.Common),
+                new Fish("Barred Surf Perch", 20, Rarity.Common),
+                new Fish("Kelp Bass", 30, Rarity.Common),
+                new Fish("White Sea Bass", 40, Rarity.Common),
+                new Fish("Spotfin Croaker", 45, Rarity.Common),
+                new Fish("California Halibut", 50, Rarity.Common),
+                new Fish("Pacific Barracuda", 60, Rarity.Common),
+                new Fish("Swordfish", 70, Rarity.Common),
+                new Fish("California Corbina", 70, Rarity.Common),
+                new Fish("Red Lionfish", 80, Rarity.Common),
+                new Fish("Black Rockfish", 85, Rarity.Common),
+                new Fish("American Sole", 90, Rarity.Common),
+                new Fish("Yellowtail", 100, Rarity.Common),
+                new Fish("Steelhead", 120, Rarity.Common),
+                new Fish("Walleye Surfperch", 200, Rarity.Common),
+                new Fish("Goldfish", 400, Rarity.Common),
+                new Fish("Tiger Shark", 800, new PedHash[] { PedHash.TigerShark }, Rarity.Common, null),
             };
             SpecialItems = new FishItem[]
-            { // count: 25
+            { // count: 31
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
@@ -267,19 +247,21 @@ namespace GTAVMod_Fishing
                     Rarity.Common, null),
                 new FishItem("Blazer", new VehicleHash[]{VehicleHash.Blazer, VehicleHash.Blazer2, VehicleHash.Blazer3},
                     Rarity.Common, null),
+                new FishItem("Lawn Mower", new VehicleHash[]{VehicleHash.Mower},
+                    Rarity.Common, null),
                 // props
                 new FishItem("Wallet", new string[]{"prop_ld_wallet_01", "prop_ld_wallet_02"},
                     Rarity.Common, delegate { Game.Player.Money += 100 + rng.Next(900);}),
                 new FishItem("Pizza", new string[]{"prop_pizza_box_01", "prop_pizza_box_02"}, 
-                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                    Rarity.Common, ItemActions.HealPlayer),
                 new FishItem("Sandwich", new string[]{"prop_sandwich_01"},
-                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                    Rarity.Common, ItemActions.HealPlayer),
                 new FishItem("Donut", new string[]{"prop_donut_01", "prop_donut_02"},
-                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                    Rarity.Common, ItemActions.HealPlayer),
                 new FishItem("Hotdog", new string[]{"prop_cs_hotdog_01", "prop_cs_hotdog_02"},
-                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                    Rarity.Common, ItemActions.HealPlayer),
                 new FishItem("Taco", new string[]{"prop_taco_01", "prop_taco_02"},
-                    Rarity.Common, new ItemAction(x => Game.Player.Character.Health = Game.Player.Character.MaxHealth)),
+                    Rarity.Common, ItemActions.HealPlayer),
                 new FishItem("Screwdriver", new string[]{"prop_tool_screwdvr01", "prop_tool_screwdvr02", "prop_tool_screwdvr03"}, 
                     Rarity.Common, null),
                 new FishItem("Alien Egg", new string[]{"prop_alien_egg_01"},
@@ -301,36 +283,84 @@ namespace GTAVMod_Fishing
                 new FishItem("Bong", new string[]{"prop_bong_01"},
                     Rarity.Common, null),
                 new FishItem("Body Armor", new string[]{"prop_bodyarmour_06"},
-                    Rarity.Common, delegate { Game.Player.Character.Armor = 100;})
+                    Rarity.Common, delegate { playerPed.Armor = 100;}),
+                new FishItem("Toothbrush", new string[]{"prop_toothbrush_01"},
+                    Rarity.Common, null),
+                new FishItem("Wheelchair", new string[]{"prop_wheelchair_01"},
+                    Rarity.Common, null),
+                new FishItem("Weed", new string[]{"prop_weed_01", "prop_weed_02"},
+                    Rarity.Common, null),
+                new FishItem("Nailgun", new string[]{"prop_tool_nailgun"},
+                     Rarity.Common, null),
+               new FishItem("Protest Sign", new string[]{"prop_protest_sign_01"},
+                    Rarity.Common, null),
+
             };
         }
-    }
 
-    //enum FishingState
-    //{
-    //    Stopped,
-    //    Casting,
-    //    Caught,
-    //}
-
-    public class Fish
-    {
-        public string Name
+        void SetupLocations()
         {
-            get;
-            private set;
+            fishingSpotPos = new Vector3[]
+            {
+                // Del Perro Pier
+                new Vector3(-1821.588f, -1271.219f, 9.517f),
+                new Vector3(-1860.388f, -1230.928f, 6.417f),
+
+                // Zancudo River
+                new Vector3(-2075.437f, 2599.529f, 4.584f),
+                new Vector3(-2084.582f, 2612.879f, 1.584f),
+
+                // legacy sphere collision points:
+                // these 3 covers Del Perro Pier
+                //new Vector3(-1857.286f, -1242.648f, 8.616f),
+                //new Vector3(-1843.145f, -1256.142f, 8.616f),
+                //new Vector3(-1831.284f, -1266.262f, 8.616f),
+            };
+            sellingSpotPos = new Vector3(-1835.398f, -1206.695f, 14.305f); 
+
+            // Set selling blip
+            //int blipSelling = Function.Call<int>(Hash.ADD_BLIP_FOR_COORD, sellingSpotPos.X, sellingSpotPos.Y, sellingSpotPos.Z);
+            //Function.Call(Hash.SET_BLIP_AS_SHORT_RANGE, blipSelling, true);
+            //Function.Call(Hash.SET_BLIP_SPRITE, blipSelling, 52);
+            //Function.Call(Hash.SET_BLIP_COLOUR, blipSelling, 3);
         }
 
-        public int Price
+        void ParseSettings()
         {
-            get;
-            private set;
+            ScriptSettings settings = ScriptSettings.Load(@".\scripts\Fishing.ini");
+            fishingKey = (Keys)Enum.Parse(typeof(Keys), settings.GetValue("Config", "FishingKey", "F5"), true);
+            fishingButton = settings.GetValue("Config", "FishingButton", 234);
+            fishAnywhere = settings.GetValue("Config", "FishAnywhere", false);
         }
 
-        public Fish(string name, int price)
+        bool IsPedInFishingArea(Ped playerPed)
         {
-            Name = name;
-            Price = price;
+            if (fishAnywhere) return true;
+            else
+            {
+                for (int i = 0; i < fishingSpotPos.Length; i += 2)
+                {
+                    if (Function.Call<bool>(Hash.IS_ENTITY_IN_AREA, playerPed, fishingSpotPos[i].X, fishingSpotPos[i].Y, fishingSpotPos[i].Z,
+                        fishingSpotPos[i + 1].X, fishingSpotPos[i + 1].Y, fishingSpotPos[i + 1].Z, true, true, true)) return true;
+                    //if (playerPed.IsInRangeOf(v, FISHINGSPOT_RANGE)) return true;
+                }
+                return false;
+            }
+        }
+
+        bool IsPedInSellingArea(Ped playerPed)
+        {
+            return playerPed.IsInRangeOf(sellingSpotPos, _SELLINGSPOT_RANGE);
+        }
+
+        bool IsPedNearBoat(Ped playerPed)
+        {
+            //Vehicle veh = Function.Call<Vehicle>(Hash.GET_CLOSEST_VEHICLE, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z, 1000f, (long)0, 70);
+            //Vehicle veh = World.GetClosestVehicle(Game.Player.Character.Position, 1000);
+            //return veh.Model.IsBoat;
+            Vehicle veh = Game.Player.LastVehicle;
+            //UI.ShowSubtitle("Veh " + veh.DisplayName + " " + veh.Model.IsBoat + " " + veh.Position.DistanceTo(playerPed.Position));
+            return (veh != null && veh.Model.IsBoat && veh.IsInRangeOf(playerPed.Position, _FISHINGBOAT_RANGE));
         }
     }
 
@@ -356,12 +386,12 @@ namespace GTAVMod_Fishing
 
     public class FishItem
     {
-        const float VEL_PED_XY = 40f;
-        const float VEL_VEH_XY = 20f;
-        const float VEL_PROP_XY = 30f;
-        const float VEL_PED_Z = 8f;
-        const float VEL_VEH_Z = 8f;
-        const float VEL_PROP_Z = 8.5f;
+        const float _VEL_PED_XY = 40f;
+        const float _VEL_VEH_XY = 20f;
+        const float _VEL_PROP_XY = 30f;
+        const float _VEL_PED_Z = 8f;
+        const float _VEL_VEH_Z = 8f;
+        const float _VEL_PROP_Z = 8.5f;
 
         public string Name
         {
@@ -382,40 +412,39 @@ namespace GTAVMod_Fishing
         VehicleHash[] vehHashes;
         string[] propStrs;
         ItemAction action;
+        Vector3 velocityMultiplier;
 
-        public FishItem(string name, PedHash[] pedHashes, Rarity rarity, ItemAction customAction)
+        public FishItem(string name, PedHash[] pedHashes, Rarity rarity, ItemAction action)
+            : this(name, pedHashes, null, null, rarity, EntityType.Ped, new Vector3(_VEL_PED_XY, _VEL_PED_XY, _VEL_PED_Z), action)
+        { }
+
+        public FishItem(string name, PedHash[] pedHashes, Rarity rarity, Vector3 velocityMultiplier, ItemAction action)
+            : this(name, pedHashes, null, null, rarity, EntityType.Ped, velocityMultiplier, action)
+        { }
+
+        public FishItem(string name, VehicleHash[] vehHashes, Rarity rarity, ItemAction action)
+            : this(name, null, vehHashes, null, rarity, EntityType.Vehicle, new Vector3(_VEL_VEH_XY, _VEL_VEH_XY, _VEL_VEH_Z), action)
+        { }
+
+        public FishItem(string name, string[] propStrs, Rarity rarity, ItemAction action)
+            : this(name, null, null, propStrs, rarity, EntityType.Prop, new Vector3(_VEL_PROP_XY, _VEL_PROP_XY, _VEL_PROP_Z), action)
+        { }
+
+        public FishItem(string name, Rarity rarity, ItemAction action)
+            : this(name, null, null, null, rarity, EntityType.None, Vector3.Zero, action)
+        { }
+
+        private FishItem(string name, PedHash[] pedHashes, VehicleHash[] vehHashes, string[] propStrs, Rarity rarity, EntityType entityType, 
+            Vector3 velocityMultiplier, ItemAction action)
         {
-            Name = name;
+            this.Name = name;
             this.pedHashes = pedHashes;
-            this.action = customAction;
-            EntityType = EntityType.Ped;
-            Rarity = rarity;
-        }
-
-        public FishItem(string name, VehicleHash[] vehHashes, Rarity rarity, ItemAction customAction)
-        {
-            Name = name;
             this.vehHashes = vehHashes;
-            this.action = customAction;
-            EntityType = EntityType.Vehicle;
-            Rarity = rarity;
-        }
-
-        public FishItem(string name, string[] propStrs, Rarity rarity, ItemAction customAction)
-        {
-            Name = name;
             this.propStrs = propStrs;
-            this.action = customAction;
-            EntityType = EntityType.Prop;
-            Rarity = rarity;
-        }
-
-        public FishItem(string name, Rarity rarity, ItemAction customAction)
-        {
-            Name = name;
-            this.action = customAction;
-            EntityType = EntityType.None;
-            Rarity = rarity;
+            this.Rarity = rarity;
+            this.EntityType = entityType;
+            this.action = action;
+            this.velocityMultiplier = velocityMultiplier;
         }
 
         public void Spawn()
@@ -433,32 +462,29 @@ namespace GTAVMod_Fishing
                 {
                     PedHash pedHashSelected = pedHashes[rng.Next(pedHashes.Length)];
                     ent = World.CreatePed(new Model(pedHashSelected), spawnPos);
-                    vel *= VEL_PED_XY;
-                    vel.Z = VEL_PED_Z;
                 }
                 else if (EntityType == EntityType.Vehicle)
                 {
                     VehicleHash vehHashSelected = vehHashes[rng.Next(vehHashes.Length)];
                     ent = World.CreateVehicle(new Model(vehHashSelected), spawnPos);
-                    vel *= VEL_VEH_XY;
-                    vel.Z = VEL_VEH_Z;
                 }
                 else
                 {
                     string propStrSelected = propStrs[rng.Next(propStrs.Length)];
                     ent = World.CreateProp(new Model(propStrSelected), spawnPos, true, false);
-                    vel = Game.Player.Character.Position - spawnPos;
-                    //ent.FreezePosition = false;
-                    vel.Normalize();
-                    vel *= VEL_PROP_XY;
-                    vel.Z = VEL_PROP_Z;
+                    //ent.Position = playerPed.Position + playerPed.ForwardVector * 0.1f; // TEST Entity stuck fix
                 }
+
+                vel.X *= velocityMultiplier.X;
+                vel.Y *= velocityMultiplier.Y;
+                vel.Z = velocityMultiplier.Z;
                 ent.Velocity = vel;
 
-                // try to fix entity if it's stuck
+                // try to fix entity if it's stuck (props are buggy)
                 if (ent.Velocity == Vector3.Zero)
                 {
-                    ent.Position = playerPed.Position; // dirty fix
+                    ent.Position = playerPed.Position + playerPed.ForwardVector * 0.1f; // tp the entity
+                    Game.Player.Character.ApplyForce(playerPed.ForwardVector * -2); // push player a bit
                 }
 
                 if (Fishing.DebugMode)
@@ -469,6 +495,32 @@ namespace GTAVMod_Fishing
             }
 
             if (action != null) action(ent);
+        }
+    }
+
+    public class Fish : FishItem
+    {
+        public string Name
+        {
+            get;
+            private set;
+        }
+
+        public int Price
+        {
+            get;
+            private set;
+        }
+
+        public Fish(string name, int price, Rarity rarity)
+            : this(name, price, new PedHash[] { PedHash.Fish }, rarity, null)
+        { }
+
+        public Fish(string name, int price, PedHash[] pedHashes, Rarity rarity, ItemAction action)
+            : base(name, pedHashes, rarity, new Vector3(34f, 34f, 7f), action)
+        {
+            Name = name;
+            Price = price;
         }
     }
 
@@ -483,7 +535,7 @@ namespace GTAVMod_Fishing
 
         public void AddFish(Fish fish)
         {
-            fishes.Add(new Fish(fish.Name, fish.Price));
+            fishes.Add(new Fish(fish.Name, fish.Price, fish.Rarity));
         }
 
         public int SellAllFish()
@@ -495,6 +547,14 @@ namespace GTAVMod_Fishing
             }
             fishes.Clear();
             return sellMoney;
+        }
+    }
+
+    public static class ItemActions
+    {
+        public static void HealPlayer(Entity ent)
+        {
+            Game.Player.Character.Health = Game.Player.Character.MaxHealth;
         }
     }
 }
