@@ -1,7 +1,7 @@
 ﻿/*
  * Fishing Mod
  * Author: libertylocked
- * Version: 0.2.3
+ * Version: 0.2.4
  * License: GPLv2
 */
 using System;
@@ -161,7 +161,6 @@ namespace GTAVMod_Fishing
 
         void UpdateMinigame()
         {
-            OutputArgument output = new OutputArgument();
             minigameTimer += Game.LastFrameTime;
             if (minigameTimer > secondsToCatchFish)
             {
@@ -204,9 +203,11 @@ namespace GTAVMod_Fishing
         void SetupAvailableItems()
         {
             NormalFishes = new Fish[] 
-            { // count: 20
+            { // count: 23
                 new Fish("Shrimp", 1, Rarity.Common),
                 new Fish("Spotted Bay Bass", 10, Rarity.Common),
+                new Fish("Pigeon", 10, new PedHash[] { PedHash.Pigeon }, Rarity.Common, new Vector3(38f, 38f, 7f), null),
+                new Fish("Cat", 10, new PedHash[] { PedHash.Cat }, Rarity.Common, new Vector3(52f, 52f, 7f), null),
                 new Fish("Blue Rockfish", 15, Rarity.Common),
                 new Fish("Barred Sand Bass", 20, Rarity.Common),
                 new Fish("Barred Surf Perch", 20, Rarity.Common),
@@ -224,17 +225,22 @@ namespace GTAVMod_Fishing
                 new Fish("Steelhead", 120, Rarity.Common),
                 new Fish("Walleye Surfperch", 200, Rarity.Common),
                 new Fish("Goldfish", 400, Rarity.Common),
+                new Fish("Dolphin", 700, new PedHash[] { PedHash.Dolphin }, Rarity.Common, null),
                 new Fish("Tiger Shark", 800, new PedHash[] { PedHash.TigerShark }, Rarity.Common, null),
             };
             SpecialItems = new FishItem[]
-            { // count: 31
+            { // count: 40
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
+                //new FishItem("test", new string[]{"propname"},
+                //    Rarity.Common, null),
                 // peds
                 new FishItem("Dead Hooker", new PedHash[]{PedHash.Hooker01SFY, PedHash.Hooker02SFY, PedHash.Hooker03SFY}, 
                     Rarity.Common, new ItemAction(x => ((Ped)x).Kill())),
                 new FishItem("Dead Johnny", new PedHash[]{PedHash.JohnnyKlebitz},
+                    Rarity.Common, new ItemAction(x => ((Ped)x).Kill())),
+                new FishItem("Dead Cop", new PedHash[]{PedHash.Cop01SFY, PedHash.Cop01SMY},
                     Rarity.Common, new ItemAction(x => ((Ped)x).Kill())),
                 new FishItem("Zombie", new PedHash[]{PedHash.Zombie01},
                     Rarity.Common, new ItemAction(x => ((Ped)x).Task.FightAgainst(playerPed))),
@@ -282,19 +288,34 @@ namespace GTAVMod_Fishing
                     Rarity.Common, null),
                 new FishItem("Bong", new string[]{"prop_bong_01"},
                     Rarity.Common, null),
-                new FishItem("Body Armor", new string[]{"prop_bodyarmour_06"},
+                new FishItem("Body Armor", new string[]{"prop_armour_pickup"},
                     Rarity.Common, delegate { playerPed.Armor = 100;}),
                 new FishItem("Toothbrush", new string[]{"prop_toothbrush_01"},
                     Rarity.Common, null),
                 new FishItem("Wheelchair", new string[]{"prop_wheelchair_01"},
                     Rarity.Common, null),
-                new FishItem("Weed", new string[]{"prop_weed_01", "prop_weed_02"},
+                new FishItem("Weed", new string[]{"prop_weed_02"},
                     Rarity.Common, null),
                 new FishItem("Nailgun", new string[]{"prop_tool_nailgun"},
                      Rarity.Common, null),
-               new FishItem("Protest Sign", new string[]{"prop_protest_sign_01"},
+                new FishItem("Protest Sign", new string[]{"prop_protest_sign_01"},
                     Rarity.Common, null),
-
+                new FishItem("Fax Machine", new string[]{"prop_fax_01"},
+                    Rarity.Common, null),
+                new FishItem("FIB Badge", new string[]{"prop_fib_badge"},
+                    Rarity.Common, ItemActions.ClearPlayerWantedLevel),
+                new FishItem("Book", new string[]{"prop_cs_book_01"},
+                    Rarity.Common, null),
+                new FishItem("Beer", new string[]{"prop_cs_beer_bot_01", "prop_cs_beer_bot_02"},
+                    Rarity.Common, null),
+                new FishItem("Tape", new string[]{"prop_beta_tape"},
+                    Rarity.Common, null),
+                new FishItem("Tape Player", new string[]{"prop_tapeplayer_01"},
+                    Rarity.Common, null),
+                new FishItem("Ballistic Shield", new string[]{"prop_ballistic_shield"},
+                    Rarity.Common, null),
+                new FishItem("Bongo", new string[]{"prop_bongos_01"},
+                    Rarity.Common, null),
             };
         }
 
@@ -517,7 +538,11 @@ namespace GTAVMod_Fishing
         { }
 
         public Fish(string name, int price, PedHash[] pedHashes, Rarity rarity, ItemAction action)
-            : base(name, pedHashes, rarity, new Vector3(34f, 34f, 7f), action)
+            : this(name, price, pedHashes, rarity, new Vector3(34f, 34f, 7f), action)
+        { }
+
+        public Fish(string name, int price, PedHash[] pedHashes, Rarity rarity, Vector3 velocityMultiplier, ItemAction action)
+            :base(name, pedHashes, rarity, velocityMultiplier, action)
         {
             Name = name;
             Price = price;
@@ -555,6 +580,11 @@ namespace GTAVMod_Fishing
         public static void HealPlayer(Entity ent)
         {
             Game.Player.Character.Health = Game.Player.Character.MaxHealth;
+        }
+
+        public static void ClearPlayerWantedLevel(Entity ent)
+        {
+            Game.Player.WantedLevel = 0;
         }
     }
 }
