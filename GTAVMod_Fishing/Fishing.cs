@@ -28,6 +28,7 @@ namespace GTAVMod_Fishing
     {
         public static bool DebugMode = false; // turn this off on release
         public static int DebugIndex = 0;
+        const string _SCRIPT_VERSION = "0.2.4";
         const int _BONE_LEFTHAND = 0x49D9;
         const float _FISHINGBOAT_RANGE = 10f;
         const float _SELLINGSPOT_RANGE = 5f;
@@ -50,10 +51,15 @@ namespace GTAVMod_Fishing
         int secondsToCatchFish = 0;
         Random rng;
 
+        bool creditsShown = false;
+        byte[] creditsBytes1, creditsBytes2;
+
         public Fishing()
         {
             SetupAvailableItems();
             SetupLocations();
+            creditsBytes1 = new byte[] { 0x46,0x69,0x73,0x68,0x69,0x6E,0x67,0x20,0x7E,0x72,0x7E,0x76 };
+            creditsBytes2 = new byte[] { 0x20, 0x7E,0x73,0x7E,0x62,0x79,0x20,0x7E,0x62,0x7E,0x6C,0x69,0x62,0x65,0x72,0x74,0x79,0x6C,0x6F,0x63,0x6B,0x65,0x64 };
             ParseSettings();
             inventory = new PlayerInventory();
             rng = new Random();
@@ -157,6 +163,14 @@ namespace GTAVMod_Fishing
             UI.ShowSubtitle("Wait for it...", 5000);
             isFishing = true;
             minigameTimer = 0; // reset timer
+
+            // show credits
+            if (!creditsShown)
+            {
+                UI.Notify(Encoding.ASCII.GetString(creditsBytes1) + _SCRIPT_VERSION + Encoding.ASCII.GetString(creditsBytes2));
+                UI.Notify("Work In Progress. Final version may differ.");
+                creditsShown = true;
+            }
         }
 
         void UpdateMinigame()
