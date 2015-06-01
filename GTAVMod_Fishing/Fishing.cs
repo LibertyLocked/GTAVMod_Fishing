@@ -72,29 +72,26 @@ namespace GTAVMod_Fishing
         {
             Player player = Game.Player;
             if (player != null) playerPed = player.Character;
-            if (player != null && player.CanControlCharacter && player.IsAlive && player.Character != null)
+            if (CanPlayerFish(player))
             {
-                if (!playerPed.IsInVehicle())
+                if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
+
+                if ((IsPedInFishingArea(playerPed) || IsPedNearBoat(playerPed))
+                    && !isFishing && !fishAnywhere)
                 {
-                    if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
+                    promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
+                    promtText.Draw();
+                }
+                if (IsPedInSellingArea(playerPed) && !isFishing)
+                {
+                    promtText.Caption = "Press " + fishingKey.ToString() + " to sell fish";
+                    promtText.Draw();
+                }
 
-                    if ((IsPedInFishingArea(playerPed) || IsPedNearBoat(playerPed))
-                        && !isFishing && !fishAnywhere)
-                    {
-                        promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
-                        promtText.Draw();
-                    }
-                    if (IsPedInSellingArea(playerPed) && !isFishing)
-                    {
-                        promtText.Caption = "Press " + fishingKey.ToString() + " to sell fish";
-                        promtText.Draw();
-                    }
-
-                    if (isFishing)
-                    {
-                        Function.Call(Hash.HIDE_HUD_AND_RADAR_THIS_FRAME);
-                        UpdateMinigame();
-                    }
+                if (isFishing)
+                {
+                    Function.Call(Hash.HIDE_HUD_AND_RADAR_THIS_FRAME);
+                    UpdateMinigame();
                 }
             }
         }
@@ -106,8 +103,7 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (IsPedInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) &&
-                (!Game.Player.Character.IsInVehicle() && Function.Call<bool>(Hash.CAN_PLAYER_START_MISSION, Game.Player)))
+            if (IsPedInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) && CanPlayerFish(Game.Player))
             {
                 if (isFishing)
                 {
@@ -118,7 +114,7 @@ namespace GTAVMod_Fishing
                     StartFishing();
                 }
             }
-            else if (IsPedInSellingArea(Game.Player.Character))
+            else if (IsPedInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
             {
                 // Sell fish
                 int sellAmount = inventory.SellAllFish();
@@ -366,6 +362,11 @@ namespace GTAVMod_Fishing
             fishingKey = (Keys)Enum.Parse(typeof(Keys), settings.GetValue("Config", "FishingKey", "F5"), true);
             fishingButton = settings.GetValue("Config", "FishingButton", 234);
             fishAnywhere = settings.GetValue("Config", "FishAnywhere", false);
+        }
+
+        bool CanPlayerFish(Player player)
+        {
+            return (player != null && player.CanControlCharacter && player.IsAlive && !player.IsOnMission && player.Character != null && !player.Character.IsInVehicle());
         }
 
         bool IsPedInFishingArea(Ped playerPed)
