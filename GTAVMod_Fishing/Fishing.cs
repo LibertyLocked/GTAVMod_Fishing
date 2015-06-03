@@ -46,6 +46,7 @@ namespace GTAVMod_Fishing
         Fish[] NormalFishes;
         FishItem[] SpecialItems;
         Ped playerPed;
+        List<Entity> spawnedEntities;
 
         float minigameTimer = 0;
         int secondsToCatchFish = 0;
@@ -63,6 +64,7 @@ namespace GTAVMod_Fishing
             ParseSettings();
             inventory = new PlayerInventory();
             rng = new Random();
+            spawnedEntities = new List<Entity>();
 
             this.Tick += OnTick;
             this.KeyDown += OnKeyDown;
@@ -76,13 +78,13 @@ namespace GTAVMod_Fishing
             {
                 if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
-                if ((IsPedInFishingArea(playerPed) || IsPedNearBoat(playerPed))
+                if ((IsEntityInFishingArea(playerPed) || IsPedNearBoat(playerPed))
                     && !isFishing && !fishAnywhere)
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
                     promtText.Draw();
                 }
-                if (IsPedInSellingArea(playerPed) && !isFishing)
+                if (IsEntityInSellingArea(playerPed) && !isFishing)
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to sell fish";
                     promtText.Draw();
@@ -103,7 +105,7 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (IsPedInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) && CanPlayerFish(Game.Player))
+            if (IsEntityInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) && CanPlayerFish(Game.Player))
             {
                 if (isFishing)
                 {
@@ -114,7 +116,7 @@ namespace GTAVMod_Fishing
                     StartFishing();
                 }
             }
-            else if (IsPedInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
+            else if (IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
             {
                 // Sell fish
                 int sellAmount = inventory.SellAllFish();
@@ -127,6 +129,7 @@ namespace GTAVMod_Fishing
                 {
                     UI.ShowSubtitle("You haven't caught any fish yet!");
                 }
+                CleanUpEntities();
             }
         }
 
@@ -186,7 +189,7 @@ namespace GTAVMod_Fishing
                     if (DebugMode) DebugIndex = (DebugIndex + 1) % SpecialItems.Length;
                     int caughtIndex = (DebugMode ? DebugIndex: rng.Next(SpecialItems.Length));
                     FishItem caughtItem = SpecialItems[caughtIndex];
-                    caughtItem.Spawn();
+                    spawnedEntities.Add(caughtItem.Spawn());
                     UI.ShowSubtitle("You've caught a " + caughtItem.Name, 5000);
                 }
                 else
@@ -196,7 +199,7 @@ namespace GTAVMod_Fishing
                     inventory.AddFish(caughtFish);
 
                     // spawn a fish
-                    caughtFish.Spawn();
+                    spawnedEntities.Add(caughtFish.Spawn());
                     //Vector3 vel = playerPed.ForwardVector * -1;
                     //Vector3 spawnPos = playerPed.Position + playerPed.ForwardVector * 20;
                     //Ped fish = World.CreatePed(new Model(PedHash.Fish), spawnPos);
@@ -364,12 +367,26 @@ namespace GTAVMod_Fishing
             fishAnywhere = settings.GetValue("Config", "FishAnywhere", false);
         }
 
+        void CleanUpEntities()
+        {
+            for (int i = 0; i < spawnedEntities.Count; i++)
+            {
+                Entity ent = spawnedEntities[i];
+                if (ent == null || IsEntityInFishingArea(ent))
+                {
+                    spawnedEntities.RemoveAt(i);
+                    if (ent != null) ent.Delete();
+                    i--;
+                }
+            }
+        }
+
         bool CanPlayerFish(Player player)
         {
             return (player != null && player.CanControlCharacter && player.IsAlive && !player.IsOnMission && player.Character != null && !player.Character.IsInVehicle());
         }
 
-        bool IsPedInFishingArea(Ped playerPed)
+        bool IsEntityInFishingArea(Entity playerPed)
         {
             if (fishAnywhere) return true;
             else
@@ -384,7 +401,7 @@ namespace GTAVMod_Fishing
             }
         }
 
-        bool IsPedInSellingArea(Ped playerPed)
+        bool IsEntityInSellingArea(Entity playerPed)
         {
             return playerPed.IsInRangeOf(sellingSpotPos, _SELLINGSPOT_RANGE);
         }
@@ -483,7 +500,7 @@ namespace GTAVMod_Fishing
             this.velocityMultiplier = velocityMultiplier;
         }
 
-        public void Spawn()
+        public Entity Spawn()
         {
             Entity ent = null;
             if (EntityType != EntityType.None)
@@ -531,6 +548,7 @@ namespace GTAVMod_Fishing
             }
 
             if (action != null) action(ent);
+            return ent;
         }
     }
 
