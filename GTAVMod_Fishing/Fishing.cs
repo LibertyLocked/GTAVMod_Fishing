@@ -78,7 +78,7 @@ namespace GTAVMod_Fishing
             {
                 if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
-                if ((IsEntityInFishingArea(playerPed) || IsPedNearBoat(playerPed))
+                if ((IsEntityInFishingArea(playerPed) || IsPlayerNearBoat(Game.Player))
                     && !isFishing && !fishAnywhere)
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to fish";
@@ -105,7 +105,7 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (IsEntityInFishingArea(Game.Player.Character) || IsPedNearBoat(Game.Player.Character) && CanPlayerFish(Game.Player))
+            if (IsEntityInFishingArea(Game.Player.Character) || IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
             {
                 if (isFishing)
                 {
@@ -386,14 +386,24 @@ namespace GTAVMod_Fishing
             return (player != null && player.CanControlCharacter && player.IsAlive && !player.IsOnMission && player.Character != null && !player.Character.IsInVehicle());
         }
 
-        bool IsEntityInFishingArea(Entity playerPed)
+        bool IsPlayerNearBoat(Player player)
+        {
+            //Vehicle veh = Function.Call<Vehicle>(Hash.GET_CLOSEST_VEHICLE, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z, 1000f, (long)0, 70);
+            //Vehicle veh = World.GetClosestVehicle(Game.Player.Character.Position, 1000);
+            //return veh.Model.IsBoat;
+            Vehicle veh = player.LastVehicle;
+            //UI.ShowSubtitle("Veh " + veh.DisplayName + " " + veh.Model.IsBoat + " " + veh.Position.DistanceTo(playerPed.Position));
+            return (veh != null && veh.Model.IsBoat && veh.IsInRangeOf(player.Character.Position, _FISHINGBOAT_RANGE));
+        }
+
+        bool IsEntityInFishingArea(Entity ent)
         {
             if (fishAnywhere) return true;
             else
             {
                 for (int i = 0; i < fishingSpotPos.Length; i += 2)
                 {
-                    if (Function.Call<bool>(Hash.IS_ENTITY_IN_AREA, playerPed, fishingSpotPos[i].X, fishingSpotPos[i].Y, fishingSpotPos[i].Z,
+                    if (Function.Call<bool>(Hash.IS_ENTITY_IN_AREA, ent, fishingSpotPos[i].X, fishingSpotPos[i].Y, fishingSpotPos[i].Z,
                         fishingSpotPos[i + 1].X, fishingSpotPos[i + 1].Y, fishingSpotPos[i + 1].Z, true, true, true)) return true;
                     //if (playerPed.IsInRangeOf(v, FISHINGSPOT_RANGE)) return true;
                 }
@@ -401,19 +411,9 @@ namespace GTAVMod_Fishing
             }
         }
 
-        bool IsEntityInSellingArea(Entity playerPed)
+        bool IsEntityInSellingArea(Entity ent)
         {
-            return playerPed.IsInRangeOf(sellingSpotPos, _SELLINGSPOT_RANGE);
-        }
-
-        bool IsPedNearBoat(Ped playerPed)
-        {
-            //Vehicle veh = Function.Call<Vehicle>(Hash.GET_CLOSEST_VEHICLE, playerPed.Position.X, playerPed.Position.Y, playerPed.Position.Z, 1000f, (long)0, 70);
-            //Vehicle veh = World.GetClosestVehicle(Game.Player.Character.Position, 1000);
-            //return veh.Model.IsBoat;
-            Vehicle veh = Game.Player.LastVehicle;
-            //UI.ShowSubtitle("Veh " + veh.DisplayName + " " + veh.Model.IsBoat + " " + veh.Position.DistanceTo(playerPed.Position));
-            return (veh != null && veh.Model.IsBoat && veh.IsInRangeOf(playerPed.Position, _FISHINGBOAT_RANGE));
+            return ent.IsInRangeOf(sellingSpotPos, _SELLINGSPOT_RANGE);
         }
     }
 
