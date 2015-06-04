@@ -365,6 +365,7 @@ namespace GTAVMod_Fishing
             fishingKey = (Keys)Enum.Parse(typeof(Keys), settings.GetValue("Config", "FishingKey", "F5"), true);
             fishingButton = settings.GetValue("Config", "FishingButton", 234);
             fishAnywhere = settings.GetValue("Config", "FishAnywhere", false);
+            entityCleanup = settings.GetValue("Config", "EntityCleanup", true);
         }
 
         void CleanUpEntities()
