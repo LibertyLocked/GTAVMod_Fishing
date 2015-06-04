@@ -34,24 +34,24 @@ namespace GTAVMod_Fishing
         const float _SELLINGSPOT_RANGE = 5f;
         const float _MINIGAME_FRAMETIME = 0.034f;
 
+        Keys fishingKey;
+        int fishingButton;
+        bool entityCleanup = true;
+        bool fishAnywhere = false;
+
+        UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
         Prop fishingRod;
         Vector3[] fishingSpotPos;
         Vector3 sellingSpotPos;
-        bool fishAnywhere = false;
-        UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
-        Keys fishingKey;
-        int fishingButton;
         bool isFishing = false;
         PlayerInventory inventory;
         Fish[] NormalFishes;
         FishItem[] SpecialItems;
         Ped playerPed;
         List<Entity> spawnedEntities;
-
         float minigameTimer = 0;
         int secondsToCatchFish = 0;
         Random rng;
-
         bool creditsShown = false;
         byte[] creditsBytes1, creditsBytes2;
 
@@ -135,7 +135,7 @@ namespace GTAVMod_Fishing
 
         void StopFishing()
         {
-            playerPed.Task.ClearAllImmediately();
+            playerPed.Task.ClearAll();
             if (fishingRod != null)
             {
                 fishingRod.Detach();
@@ -369,16 +369,11 @@ namespace GTAVMod_Fishing
 
         void CleanUpEntities()
         {
-            for (int i = 0; i < spawnedEntities.Count; i++)
+            foreach (Entity ent in spawnedEntities)
             {
-                Entity ent = spawnedEntities[i];
-                if (ent == null || IsEntityInFishingArea(ent))
-                {
-                    spawnedEntities.RemoveAt(i);
-                    if (ent != null) ent.Delete();
-                    i--;
-                }
+                if (ent != null && IsEntityInFishingArea(ent)) ent.Delete(); // delete entities in fishing area
             }
+            spawnedEntities.Clear(); // clear entities list for performance
         }
 
         bool CanPlayerFish(Player player)
