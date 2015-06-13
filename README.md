@@ -23,6 +23,7 @@ This mod allows the player to fish at Del Perro Pier, or on any boat! You can se
 - v0.2.3: Added boat fishing. Added controller support. Added more fish and items.
 - v0.2.4: Fixed issues with Shift key. Fixed certain items being static. Added more fish and items.
 - v0.2.5: Implemented backpack size limit. Added more configurable parameters. Implemented item rarities. Added 2 items with special effects. 
+- v0.2.6: Updated for Script Hook V .NET v1.0
 
 [Topic on GTAForums](http://www.gtaforums.com/topic/796967-vwip-fishing-mod)
 

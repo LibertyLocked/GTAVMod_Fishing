@@ -1,7 +1,7 @@
 ﻿/*
  * Fishing Mod
  * Author: libertylocked
- * Version: 0.2.5
+ * Version: 0.2.6
  * License: GPLv2
 */
 using System;
@@ -28,7 +28,7 @@ namespace GTAVMod_Fishing
     {
         public static bool DebugMode = false; // turn this off on release
         public static int DebugIndex = 0;
-        const string _SCRIPT_VERSION = "0.2.5";
+        const string _SCRIPT_VERSION = "0.2.6";
         const int _BONE_LEFTHAND = 0x49D9;
         const float _FISHINGBOAT_RANGE = 10f;
         const float _SELLINGSPOT_RANGE = 5f;
@@ -339,7 +339,7 @@ namespace GTAVMod_Fishing
                 new FishItem("Battery", new string[]{"prop_battery_01"},
                     Rarity.Common, ItemActions.ShootTaserBullet),
                 new FishItem("Explosive Crow", new PedHash[]{PedHash.Crow},
-                    Rarity.Common, new ItemAction(x => World.AddExplosion(x.Position, ExplosionType.BigFire, 1f, 1f))),
+                    Rarity.Common, new ItemAction(x => World.AddExplosion(x.Position, ExplosionType.ExplosionWithFire1, 1f, 1f))),
             };
         }
 
@@ -388,7 +388,7 @@ namespace GTAVMod_Fishing
 
         bool CanPlayerFish(Player player)
         {
-            return (player != null && player.CanControlCharacter && player.IsAlive && !player.IsOnMission && player.Character != null && !player.Character.IsInVehicle());
+            return (player != null && player.CanControlCharacter && player.IsAlive && player.Character != null && !player.Character.IsInVehicle());
         }
 
         bool IsPlayerNearBoat(Player player)
