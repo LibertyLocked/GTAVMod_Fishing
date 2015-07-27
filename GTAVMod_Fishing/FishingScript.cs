@@ -1,8 +1,6 @@
 ﻿/*
  * Fishing Mod
  * Author: libertylocked
- * Version: 0.2.6
- * License: GPLv2
 */
 using System;
 using System.Collections.Generic;
@@ -16,19 +14,8 @@ using GTA.Native;
 
 namespace GTAVMod_Fishing
 {
-    public static class Utils
+    public class FishingScript : Script
     {
-        public static int PedBoneIndex(this Ped p, int b)
-        {
-            return Function.Call<int>(Hash.GET_PED_BONE_INDEX, p.Handle, b);
-        }
-    }
-
-    public class Fishing : Script
-    {
-        public static bool DebugMode = false; // turn this off on release
-        public static int DebugIndex = 0;
-        const string _SCRIPT_VERSION = "0.2.6";
         const int _BONE_LEFTHAND = 0x49D9;
         const float _FISHINGBOAT_RANGE = 10f;
         const float _SELLINGSPOT_RANGE = 5f;
@@ -60,7 +47,7 @@ namespace GTAVMod_Fishing
 
         static Action postAction = null; // action to be performed when fishing stopped
 
-        public Fishing()
+        public FishingScript()
         {
             SetupAvailableItems();
             SetupLocations();
@@ -166,7 +153,7 @@ namespace GTAVMod_Fishing
             }
             fishingRod = World.CreateProp(new Model("prop_fishing_rod_01"), Vector3.Zero, false, false);
             fishingRod.AttachTo(playerPed, playerPed.PedBoneIndex(_BONE_LEFTHAND), new Vector3(0.13f, 0.1f, 0.01f), new Vector3(180f, 90f, 70f));
-            if (DebugMode) secondsToCatchFish = 1;
+            if (Globals.DebugMode) secondsToCatchFish = 1;
             else secondsToCatchFish = waitTime + rng.Next(10);
             UI.ShowSubtitle("Wait for it...", 5000);
             isFishing = true;
@@ -175,7 +162,7 @@ namespace GTAVMod_Fishing
             // show credits
             if (!creditsShown)
             {
-                UI.Notify(Encoding.ASCII.GetString(creditsBytes1) + _SCRIPT_VERSION + Encoding.ASCII.GetString(creditsBytes2));
+                UI.Notify(Encoding.ASCII.GetString(creditsBytes1) + Globals._SCRIPT_VERSION + Encoding.ASCII.GetString(creditsBytes2));
                 UI.Notify("Work In Progress. Final version may differ.");
                 creditsShown = true;
             }
@@ -193,13 +180,13 @@ namespace GTAVMod_Fishing
                 {
                     UI.ShowSubtitle("You didn't catch anything.");
                 }
-                else if (rNumber < (DebugMode ? 100 : chanceNothing + chanceJunk))  // getting special items
+                else if (rNumber < (Globals.DebugMode ? 100 : chanceNothing + chanceJunk))  // getting special items
                 {
                     FishItem caughtItem;
-                    if (DebugMode)
+                    if (Globals.DebugMode)
                     {
-                        DebugIndex = (DebugIndex + 1) % SpecialItems.Length;
-                        caughtItem = SpecialItems[DebugIndex];
+                        Globals.DebugIndex = (Globals.DebugIndex + 1) % SpecialItems.Length;
+                        caughtItem = SpecialItems[Globals.DebugIndex];
                     }
                     else
                     {
@@ -427,286 +414,6 @@ namespace GTAVMod_Fishing
             {
                 Game.Player.Character.Task.PlayAnimation(animBase, animName, speed, duration, lastAnim, playbackRate);
             };
-        }
-    }
-
-    public enum EntityType
-    {
-        Ped,
-        Vehicle,
-        Prop,
-        None,
-    }
-
-    public enum Rarity
-    {
-        Legendary = 1,
-        Exceptional = 2,
-        Unique = 3,
-        Rare = 4,
-        Uncommon = 5,
-        Common = 6,
-    }
-
-    public delegate void ItemAction(Entity ent);
-
-    public class FishItem
-    {
-        const float _VEL_PED_XY = 40f;
-        const float _VEL_VEH_XY = 20f;
-        const float _VEL_PROP_XY = 30f;
-        const float _VEL_PED_Z = 8f;
-        const float _VEL_VEH_Z = 8f;
-        const float _VEL_PROP_Z = 8.5f;
-
-        public string Name
-        {
-            get;
-            private set;
-        }
-        public EntityType EntityType
-        {
-            get;
-            private set;
-        }
-        public Rarity Rarity
-        {
-            get;
-            private set;
-        }
-        PedHash[] pedHashes;
-        VehicleHash[] vehHashes;
-        string[] propStrs;
-        ItemAction action;
-        Vector3 velocityMultiplier;
-
-        public FishItem(string name, PedHash[] pedHashes, Rarity rarity, ItemAction action)
-            : this(name, pedHashes, null, null, rarity, EntityType.Ped, new Vector3(_VEL_PED_XY, _VEL_PED_XY, _VEL_PED_Z), action)
-        { }
-
-        public FishItem(string name, PedHash[] pedHashes, Rarity rarity, Vector3 velocityMultiplier, ItemAction action)
-            : this(name, pedHashes, null, null, rarity, EntityType.Ped, velocityMultiplier, action)
-        { }
-
-        public FishItem(string name, VehicleHash[] vehHashes, Rarity rarity, ItemAction action)
-            : this(name, null, vehHashes, null, rarity, EntityType.Vehicle, new Vector3(_VEL_VEH_XY, _VEL_VEH_XY, _VEL_VEH_Z), action)
-        { }
-
-        public FishItem(string name, string[] propStrs, Rarity rarity, ItemAction action)
-            : this(name, null, null, propStrs, rarity, EntityType.Prop, new Vector3(_VEL_PROP_XY, _VEL_PROP_XY, _VEL_PROP_Z), action)
-        { }
-
-        public FishItem(string name, Rarity rarity, ItemAction action)
-            : this(name, null, null, null, rarity, EntityType.None, Vector3.Zero, action)
-        { }
-
-        private FishItem(string name, PedHash[] pedHashes, VehicleHash[] vehHashes, string[] propStrs, Rarity rarity, EntityType entityType, 
-            Vector3 velocityMultiplier, ItemAction action)
-        {
-            this.Name = name;
-            this.pedHashes = pedHashes;
-            this.vehHashes = vehHashes;
-            this.propStrs = propStrs;
-            this.Rarity = rarity;
-            this.EntityType = entityType;
-            this.action = action;
-            this.velocityMultiplier = velocityMultiplier;
-        }
-
-        public Entity Spawn()
-        {
-            Entity ent = null;
-            if (EntityType != EntityType.None)
-            {
-                Ped playerPed = Game.Player.Character;
-                Random rng = new Random();
-                Vector3 spawnPos = playerPed.Position + playerPed.ForwardVector * 20;
-                Vector3 vel = playerPed.ForwardVector * -1;
-                if (Fishing.DebugMode) UI.Notify(Fishing.DebugIndex + " " + Name);
-
-                if (EntityType == EntityType.Ped)
-                {
-                    PedHash pedHashSelected = pedHashes[rng.Next(pedHashes.Length)];
-                    ent = World.CreatePed(new Model(pedHashSelected), spawnPos);
-                }
-                else if (EntityType == EntityType.Vehicle)
-                {
-                    VehicleHash vehHashSelected = vehHashes[rng.Next(vehHashes.Length)];
-                    ent = World.CreateVehicle(new Model(vehHashSelected), spawnPos);
-                }
-                else
-                {
-                    string propStrSelected = propStrs[rng.Next(propStrs.Length)];
-                    ent = World.CreateProp(new Model(propStrSelected), spawnPos, true, false);
-                    //ent.Position = playerPed.Position + playerPed.ForwardVector * 0.1f; // TEST Entity stuck fix
-                }
-
-                vel.X *= velocityMultiplier.X;
-                vel.Y *= velocityMultiplier.Y;
-                vel.Z = velocityMultiplier.Z;
-                ent.Velocity = vel;
-
-                // try to fix entity if it's stuck (props are buggy)
-                if (ent.Velocity == Vector3.Zero)
-                {
-                    ent.Position = playerPed.Position + playerPed.ForwardVector * 0.1f; // tp the entity
-                    Game.Player.Character.ApplyForce(playerPed.ForwardVector * -2); // push player a bit
-                }
-
-                if (Fishing.DebugMode)
-                {
-                    UI.Notify("Pos " + ent.Position.ToString());
-                    UI.Notify("Vel " + ent.Velocity.ToString());
-                }
-            }
-
-            if (action != null) action(ent);
-            return ent;
-        }
-    }
-
-    public class Fish : FishItem
-    {
-        public int Price
-        {
-            get;
-            private set;
-        }
-
-        public Fish(string name, int price, Rarity rarity)
-            : this(name, price, new PedHash[] { PedHash.Fish }, rarity, null)
-        { }
-
-        public Fish(string name, int price, PedHash[] pedHashes, Rarity rarity, ItemAction action)
-            : this(name, price, pedHashes, rarity, new Vector3(34f, 34f, 7f), action)
-        { }
-
-        public Fish(string name, int price, PedHash[] pedHashes, Rarity rarity, Vector3 velocityMultiplier, ItemAction action)
-            :base(name, pedHashes, rarity, velocityMultiplier, action)
-        {
-            Price = price;
-        }
-    }
-
-    public class PlayerInventory
-    {
-        List<Fish> fishes;
-        int size;
-
-        public int MaxSize
-        {
-            get { return size; }
-        }
-
-        public int CurrSize
-        {
-            get { return fishes.Count; }
-        }
-
-        public PlayerInventory(int size)
-        {
-            this.size = size;
-            fishes = new List<Fish>();
-        }
-
-        public bool AddFish(Fish fish)
-        {
-            if (fishes.Count >= size)
-            {
-                return false;
-            }
-            else
-            {
-                fishes.Add(new Fish(fish.Name, fish.Price, fish.Rarity));
-                return true;
-            }
-        }
-
-        public int SellAllFish()
-        {
-            int sellMoney = 0;
-            foreach (Fish fish in fishes)
-            {
-                sellMoney += fish.Price;
-            }
-            fishes.Clear();
-            return sellMoney;
-        }
-    }
-
-    public static class ItemActions
-    {
-        public static void HealPlayer(Entity ent)
-        {
-            Game.Player.Character.Health = Game.Player.Character.MaxHealth;
-        }
-
-        public static void ClearPlayerWantedLevel(Entity ent)
-        {
-            Game.Player.WantedLevel = 0;
-        }
-
-        public static void KillPed(Entity ent)
-        {
-            if ((Ped)ent != null)
-            {
-                ((Ped)ent).Kill();
-            }
-        }
-
-        public static void ShootTaserBullet(Entity ent)
-        {
-            //void SHOOT_SINGLE_BULLET_BETWEEN_COORDS(float x1, float y1, float z1, float x2, float y2, float z2, 
-            //int damage, BOOL p7, Hash weaponHash, Ped ownerPed, BOOL p10, BOOL p11, float speed) // 867654CBC7606F2C CB7415AC
-            Vector3 shootTo = Game.Player.Character.Position;
-            Vector3 shootFrom = Game.Player.Character.Position + Game.Player.Character.ForwardVector * 1f;
-            Model stunGunModel = new Model(WeaponHash.StunGun);
-            Ped attacker = World.CreatePed(new Model(PedHash.Fish), shootFrom);
-            Function.Call(Hash.SHOOT_SINGLE_BULLET_BETWEEN_COORDS, shootFrom.X, shootFrom.Y, shootFrom.Z, shootTo.X, shootTo.Y, shootTo.Z,
-                0, true, stunGunModel.Hash, attacker, true, true, 1f);
-            attacker.Delete();
-        }
-    }
-
-    public static class ItemPicker
-    {
-        static Random rng = new Random();
-        static int TotalFishChance = 0, TotalItemChance = 0;
-
-        public static Fish PickFromFishes(Fish[] fishes)
-        {
-            if (TotalFishChance == 0) TotalFishChance = GetTotalChance(fishes);
-            return (Fish)Pick(fishes, TotalFishChance);
-        }
-
-        public static FishItem PickFromItems(FishItem[] fishItems)
-        {
-            if (TotalItemChance == 0) TotalItemChance = GetTotalChance(fishItems);
-            return Pick(fishItems, TotalItemChance);
-        }
-
-        private static FishItem Pick(FishItem[] fishItems, int totalChance)
-        {
-            int numPicked = rng.Next(totalChance);
-            int cumulativeChance = 0;
-            int i = 0;
-            for (i = 0; i < fishItems.Length; i++)
-            {
-                //if (numPicked >= cumulativeChance) break;
-                cumulativeChance += (int)fishItems[i].Rarity;
-                if (numPicked < cumulativeChance) break;
-            }
-            return fishItems[i];
-        }
-
-        private static int GetTotalChance(FishItem[] fishItems)
-        {
-            int total = 0;
-            foreach (FishItem item in fishItems)
-            {
-                total += (int)item.Rarity;
-            }
-            return total;
         }
     }
 }
