@@ -54,6 +54,7 @@
     <Compile Include="ItemAction.cs" />
     <Compile Include="ItemActions.cs" />
     <Compile Include="ItemPicker.cs" />
+    <Compile Include="ItemPopulator.cs" />
     <Compile Include="PlayerInventory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rarity.cs" />
