@@ -16,5 +16,6 @@ namespace GTAVMod_Fishing
         public static bool DebugMode = false;
 #endif
         public static int DebugIndex = 0;
+        public static bool FishAnywhere = false;
     }
 }

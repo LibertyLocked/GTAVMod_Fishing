@@ -17,22 +17,18 @@ namespace GTAVMod_Fishing
     public class FishingScript : Script
     {
         const int _BONE_LEFTHAND = 0x49D9;
-        const float _FISHINGBOAT_RANGE = 10f;
-        const float _SELLINGSPOT_RANGE = 5f;
         const float _MINIGAME_FRAMETIME = 0.034f;
 
         Keys fishingKey;
         int fishingButton;
         bool entityCleanup = true;
-        bool fishAnywhere = false;
         int backpackSize = 30;
         int chanceNothing = 5, chanceJunk = 35;
         int waitTime = 5;
 
         UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
         Prop fishingRod;
-        Vector3[] fishingSpotPos;
-        Vector3 sellingSpotPos;
+        LocationHelper loc;
         bool isFishing = false;
         PlayerInventory inventory;
         Fish[] NormalFishes;
@@ -50,13 +46,13 @@ namespace GTAVMod_Fishing
         public FishingScript()
         {
             SetupAvailableItems();
-            SetupLocations();
             ParseSettings();
             creditsBytes1 = new byte[] { 0x46,0x69,0x73,0x68,0x69,0x6E,0x67,0x20,0x7E,0x72,0x7E,0x76 };
             creditsBytes2 = new byte[] { 0x20,0x7E,0x73,0x7E,0x62,0x79,0x20,0x7E,0x62,0x7E,0x6C,0x69,0x62,0x65,0x72,0x74,0x79,0x6C,0x6F,0x63,0x6B,0x65,0x64 };
             inventory = new PlayerInventory(backpackSize);
             rng = new Random();
             spawnedEntities = new List<Entity>();
+            loc = new LocationHelper();
 
             this.Tick += OnTick;
             this.KeyDown += OnKeyDown;
@@ -70,14 +66,14 @@ namespace GTAVMod_Fishing
             {
                 if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
-                if ((IsEntityInFishingArea(playerPed) || IsPlayerNearBoat(Game.Player))
-                    && !isFishing && !fishAnywhere)
+                if ((loc.IsEntityInFishingArea(playerPed) || loc.IsPlayerNearBoat(Game.Player))
+                    && !isFishing && !Globals.FishAnywhere)
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to fish"
                         + "\nBackpack: " + inventory.CurrSize + "/" + inventory.MaxSize;
                     promtText.Draw();
                 }
-                if (IsEntityInSellingArea(playerPed) && !isFishing)
+                if (loc.IsEntityInSellingArea(playerPed) && !isFishing)
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to sell " + inventory.CurrSize + " fish";
                     promtText.Draw();
@@ -98,7 +94,7 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
+            if (loc.IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
             {
                 // Sell fish
                 int sellAmount = inventory.SellAllFish();
@@ -113,7 +109,7 @@ namespace GTAVMod_Fishing
                 }
                 CleanUpEntities();
             }
-            else if (IsEntityInFishingArea(Game.Player.Character) || IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
+            else if (loc.IsEntityInFishingArea(Game.Player.Character) || loc.IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
             {
                 if (isFishing)
                 {
@@ -337,33 +333,12 @@ namespace GTAVMod_Fishing
             };
         }
 
-        void SetupLocations()
-        {
-            fishingSpotPos = new Vector3[]
-            {
-                // Del Perro Pier
-                new Vector3(-1821.588f, -1271.219f, 9.517f),
-                new Vector3(-1860.388f, -1230.928f, 6.417f),
-
-                // Zancudo River
-                new Vector3(-2075.437f, 2599.529f, 4.584f),
-                new Vector3(-2084.582f, 2612.879f, 1.584f),
-            };
-            sellingSpotPos = new Vector3(-1835.398f, -1206.695f, 14.305f); 
-
-            // Set selling blip
-            //int blipSelling = Function.Call<int>(Hash.ADD_BLIP_FOR_COORD, sellingSpotPos.X, sellingSpotPos.Y, sellingSpotPos.Z);
-            //Function.Call(Hash.SET_BLIP_AS_SHORT_RANGE, blipSelling, true);
-            //Function.Call(Hash.SET_BLIP_SPRITE, blipSelling, 52);
-            //Function.Call(Hash.SET_BLIP_COLOUR, blipSelling, 3);
-        }
-
         void ParseSettings()
         {
             ScriptSettings settings = ScriptSettings.Load(@".\scripts\Fishing.ini");
             fishingKey = (Keys)Enum.Parse(typeof(Keys), settings.GetValue("Config", "FishingKey", "F5"), true);
             fishingButton = settings.GetValue("Config", "FishingButton", 234);
-            fishAnywhere = settings.GetValue("Config", "FishAnywhere", false);
+            Globals.FishAnywhere= settings.GetValue("Config", "FishAnywhere", false);
             entityCleanup = settings.GetValue("Config", "EntityCleanup", true);
             chanceNothing = settings.GetValue("Config", "ChanceNothing", 5);
             chanceJunk = settings.GetValue("Config", "ChanceJunk", 35);
@@ -375,7 +350,7 @@ namespace GTAVMod_Fishing
         {
             foreach (Entity ent in spawnedEntities)
             {
-                if (ent != null && IsEntityInFishingArea(ent)) ent.Delete(); // delete entities in fishing area
+                if (ent != null && loc.IsEntityInFishingArea(ent)) ent.Delete(); // delete entities in fishing area
             }
             spawnedEntities.Clear(); // clear entities list for performance
         }
@@ -383,31 +358,6 @@ namespace GTAVMod_Fishing
         bool CanPlayerFish(Player player)
         {
             return (player != null && player.CanControlCharacter && player.IsAlive && player.Character != null && !player.Character.IsInVehicle());
-        }
-
-        bool IsPlayerNearBoat(Player player)
-        {
-            Vehicle veh = player.LastVehicle;
-            return (veh != null && veh.Model.IsBoat && veh.IsInRangeOf(player.Character.Position, _FISHINGBOAT_RANGE));
-        }
-
-        bool IsEntityInFishingArea(Entity ent)
-        {
-            if (fishAnywhere) return true;
-            else
-            {
-                for (int i = 0; i < fishingSpotPos.Length; i += 2)
-                {
-                    if (Function.Call<bool>(Hash.IS_ENTITY_IN_AREA, ent, fishingSpotPos[i].X, fishingSpotPos[i].Y, fishingSpotPos[i].Z,
-                        fishingSpotPos[i + 1].X, fishingSpotPos[i + 1].Y, fishingSpotPos[i + 1].Z, true, true, true)) return true;
-                }
-                return false;
-            }
-        }
-
-        bool IsEntityInSellingArea(Entity ent)
-        {
-            return ent.IsInRangeOf(sellingSpotPos, _SELLINGSPOT_RANGE);
         }
 
         public static void PostActionQueue(Action action)
