@@ -1,7 +1,7 @@
 # Fishing Mod
 Note: This mod is currently work in progress.
 
-This mod allows the player to fish at Del Perro Pier, or on any boat! You can sell the fish you've caught as well. Currently there are 23 types of fish and 42 items for you to catch!
+This mod allows the player to fish at Del Perro Pier, or on any boat! You can sell the fish you've caught as well. Currently there are 23 types of fish and 45 items for you to catch!
 
 ##REQUIREMENTS:
 1. [ScriptHookV](http://gtaforums.com/topic/788343-vrel-script-hook-v/)
@@ -24,6 +24,7 @@ This mod allows the player to fish at Del Perro Pier, or on any boat! You can se
 - v0.2.4: Fixed issues with Shift key. Fixed certain items being static. Added more fish and items.
 - v0.2.5: Implemented backpack size limit. Added more configurable parameters. Implemented item rarities. Added 2 items with special effects. 
 - v0.2.6: Updated for Script Hook V .NET v1.0
+- v0.2.7: Fixed selling issue with FishAnywhere turned on. Added 3 items. Mod is now being distributed as a .dll file (for the upcoming minigame update) 
 
 [Topic on GTAForums](http://www.gtaforums.com/topic/796967-vwip-fishing-mod)
 
