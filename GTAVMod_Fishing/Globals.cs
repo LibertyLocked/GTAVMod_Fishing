@@ -9,7 +9,7 @@ namespace GTAVMod_Fishing
 {
     class Globals
     {
-        public const string _SCRIPT_VERSION = "0.2.7";
+        public const string _SCRIPT_VERSION = "0.2.8";
 #if DEBUG
         public static bool DebugMode = true;
 #else
