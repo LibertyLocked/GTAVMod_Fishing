@@ -1,4 +1,6 @@
 # Fishing Mod
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/libertylocked/gtavmod_fishing?branch=master&svg=true)](https://ci.appveyor.com/project/libertylocked/gtavmod_fishing)
+
 Note: This mod is currently work in progress.
 
 This mod allows the player to fish at Del Perro Pier, or on any boat! You can sell the fish you've caught as well. Currently there are 23 types of fish and 45 items for you to catch!
