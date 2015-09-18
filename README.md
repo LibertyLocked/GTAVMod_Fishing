@@ -1,5 +1,5 @@
 # Fishing Mod
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/libertylocked/gtavmod_fishing?branch=master&svg=true)](https://ci.appveyor.com/project/libertylocked/gtavmod_fishing)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/LibertyLocked/gtavmod_fishing?branch=master&svg=true)](https://ci.appveyor.com/project/LibertyLocked/gtavmod-fishing)
 
 Note: This mod is currently work in progress.
 
