@@ -10,7 +10,7 @@ This mod allows the player to fish at Del Perro Pier, or on any boat! You can se
 2. [ScriptHookV DotNet](http://gtaforums.com/topic/789907-vrel-community-script-hook-v-net)
 
 ##INSTALLATION:
-1. Put "Fishing.cs" and "Fishing.ini" in "scripts" folder. Create "scripts" folder if it does not exist. 
+1. Put "Fishing.dll" and "Fishing.ini" in "scripts" folder. Create "scripts" folder if it does not exist. 
 2. Open "Fishing.ini" and change the keybind for fishing if F5 is already bound to other scripts. 
 
 ##HOW TO PLAY:
