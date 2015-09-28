@@ -323,7 +323,7 @@ namespace GTAVMod_Fishing
                 new FishItem("Battery", new string[]{"prop_battery_01"},
                     Rarity.Common, ItemActions.ShootTaserBullet),
                 new FishItem("Explosive Crow", new PedHash[]{PedHash.Crow},
-                    Rarity.Common, new ItemAction(x => World.AddExplosion(x.Position, ExplosionType.FlameExplode, 1f, 1f))),
+                    Rarity.Common, new ItemAction(x => World.AddExplosion(x.Position, ExplosionType.Propane, 1f, 1f))),
                 new FishItem("Artifact", new string[]{"prop_artifact_01"},
                     Rarity.Rare, delegate { Game.Player.Money += 2000; }),
                 new FishItem("Bowling Ball", new string[]{"prop_bowling_ball"},
