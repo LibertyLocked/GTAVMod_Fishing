@@ -10,6 +10,8 @@ namespace GTAVMod_Fishing
 {
     public class PlayerInventory
     {
+        FishingRod fishingRod;
+
         List<Fish> fishes;
         int size;
 
@@ -21,6 +23,11 @@ namespace GTAVMod_Fishing
         public int CurrSize
         {
             get { return fishes.Count; }
+        }
+
+        public bool HasFishingRod
+        {
+            get { return fishingRod != null; }
         }
 
         public PlayerInventory(int size)
@@ -51,6 +58,11 @@ namespace GTAVMod_Fishing
             }
             fishes.Clear();
             return sellMoney;
+        }
+
+        public void AddFishingRod(FishingRod fishingRod)
+        {
+            this.fishingRod = fishingRod;
         }
     }
 

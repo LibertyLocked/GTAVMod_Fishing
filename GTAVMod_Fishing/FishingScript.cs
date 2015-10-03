@@ -66,11 +66,25 @@ namespace GTAVMod_Fishing
             {
                 if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
+                if ((loc.IsEntityInStoreArea(playerPed)) && !inventory.HasFishingRod)
+                {
+                    promtText.Caption = "Press " + fishingKey.ToString() + " to buy a fishing rod"
+                        + "\nCost: $10";
+                    promtText.Draw();
+                }
+
                 if ((loc.IsEntityInFishingArea(playerPed) || loc.IsPlayerNearBoat(Game.Player))
                     && !isFishing && !Globals.FishAnywhere)
                 {
-                    promtText.Caption = "Press " + fishingKey.ToString() + " to fish"
-                        + "\nBackpack: " + inventory.CurrSize + "/" + inventory.MaxSize;
+                    if (inventory.HasFishingRod)
+                    {
+                        promtText.Caption = "Press " + fishingKey.ToString() + " to fish"
+                            + "\nBackpack: " + inventory.CurrSize + "/" + inventory.MaxSize;
+                    }
+                    else
+                    {
+                        promtText.Caption = "You don't have a fishing rod.\nBuy one from a convenience store!";
+                    }
                     promtText.Draw();
                 }
                 if (loc.IsEntityInSellingArea(playerPed) && !isFishing)
@@ -94,30 +108,43 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (loc.IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
+            if (inventory.HasFishingRod)
             {
-                // Sell fish
-                int sellAmount = inventory.SellAllFish();
-                if (sellAmount > 0)
+                if (loc.IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
                 {
-                    Game.Player.Money += sellAmount;
-                    UI.ShowSubtitle("You've sold all your fish for $" + sellAmount);
+                    // Sell fish
+                    int sellAmount = inventory.SellAllFish();
+                    if (sellAmount > 0)
+                    {
+                        Game.Player.Money += sellAmount;
+                        UI.ShowSubtitle("You've sold all your fish for $" + sellAmount);
+                    }
+                    else
+                    {
+                        UI.ShowSubtitle("You haven't caught any fish yet!");
+                    }
+                    CleanUpEntities();
                 }
-                else
+                else if (loc.IsEntityInFishingArea(Game.Player.Character) || loc.IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
                 {
-                    UI.ShowSubtitle("You haven't caught any fish yet!");
+                    if (isFishing)
+                    {
+                        StopFishing();
+                    }
+                    else
+                    {
+                        StartFishing();
+                    }
                 }
-                CleanUpEntities();
             }
-            else if (loc.IsEntityInFishingArea(Game.Player.Character) || loc.IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
+            else
             {
-                if (isFishing)
+                // buy a fishing rod
+                if (loc.IsEntityInStoreArea(playerPed))
                 {
-                    StopFishing();
-                }
-                else
-                {
-                    StartFishing();
+                    Game.Player.Money -= 10;
+                    inventory.AddFishingRod(new FishingRod(10));
+                    UI.ShowSubtitle("You bought a regular fishing rod");
                 }
             }
         }

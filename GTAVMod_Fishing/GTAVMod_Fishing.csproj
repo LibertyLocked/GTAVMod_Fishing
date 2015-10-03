@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="EntityType.cs" />
     <Compile Include="Fish.cs" />
+    <Compile Include="FishingRod.cs" />
     <Compile Include="FishingScript.cs" />
     <Compile Include="FishItem.cs" />
     <Compile Include="Globals.cs" />

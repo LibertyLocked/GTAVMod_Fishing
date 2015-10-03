@@ -77,7 +77,14 @@ namespace GTAVMod_Fishing
 
         public bool IsEntityInStoreArea(Entity ent)
         {
-            return isEntityInOneOfTheAreas(ent, storePos);
+            foreach (Vector3 p in storePos)
+            {
+                if (ent.IsInRangeOf(p, _SELLINGSPOT_RANGE))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
 
