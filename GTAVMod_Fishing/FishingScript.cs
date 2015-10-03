@@ -83,7 +83,7 @@ namespace GTAVMod_Fishing
                     }
                     else
                     {
-                        promtText.Caption = "You don't have a fishing rod.\nBuy one from a convenience store!";
+                        promtText.Caption = "You don't have a fishing rod.\nBuy one at a convenience store!";
                     }
                     promtText.Draw();
                 }
@@ -260,7 +260,7 @@ namespace GTAVMod_Fishing
             };
 
             SpecialItems = new FishItem[]
-            { // count: 45
+            { // count: 48
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
@@ -357,6 +357,12 @@ namespace GTAVMod_Fishing
                     Rarity.Common, null),
                 new FishItem("Cleaver", new string[]{"prop_cleaver"},
                     Rarity.Common, null),
+                new FishItem("Yoga Mat", new string[]{"prop_yoga_mat_01", "prop_yoga_mat_02", "prop_yoga_mat_03"},
+                    Rarity.Common, null),
+                new FishItem("10k Weight", new string[]{"prop_weight_10k"},
+                    Rarity.Common, null),
+                new FishItem("TV", new string[]{"prop_tv_02", "prop_tv_04", "prop_tv_05", "prop_tv_06", "prop_tv_07"},
+                    Rarity.Common, ItemActions.ShootTaserBullet),
             };
         }
 

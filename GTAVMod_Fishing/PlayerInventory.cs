@@ -27,7 +27,11 @@ namespace GTAVMod_Fishing
 
         public bool HasFishingRod
         {
+#if DEBUG
+            get { return true; }
+#else
             get { return fishingRod != null; }
+#endif
         }
 
         public PlayerInventory(int size)
