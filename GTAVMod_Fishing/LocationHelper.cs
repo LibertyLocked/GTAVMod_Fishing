@@ -24,10 +24,33 @@ namespace GTAVMod_Fishing
                 // Del Perro Pier
                 new Vector3(-1821.588f, -1271.219f, 9.517f),
                 new Vector3(-1860.388f, -1230.928f, 6.417f),
-
-                // Zancudo River
+                // Zancudo River 1
                 new Vector3(-2075.437f, 2599.529f, 4.584f),
                 new Vector3(-2084.582f, 2612.879f, 1.584f),
+                // Mirror Park
+                new Vector3(1121.867f, -666.051f, 58.601f),
+                new Vector3(1106.016f, -628.940f, 55.901f),
+                // Alamo Sea 1
+                new Vector3(721.455f, 4087.194f, 39.352f),
+                new Vector3(707.821f, 4099.042f, 33.352f),
+                // Alamo Sea 2
+                new Vector3(1729.679f, 3987.693f, 32.352f),
+                new Vector3(1736.789f, 3980.702f, 30.252f),
+                // Alamo Sea 3
+                new Vector3(1305.793f, 4208.094f, 37.609f),
+                new Vector3(1295.458f, 4223.160f, 32.009f),
+                // Alamo Sea 4
+                new Vector3(1344.326f, 4218.037f, 35.509f),
+                new Vector3(1332.694f, 4230.413f, 31.509f),
+                // Lighthouse 1
+                new Vector3(3376.033f, 5180.303f, 2.460f),
+                new Vector3(3369.488f, 5185.949f, -0.540f),
+                // Paleto 1
+                new Vector3(-288.438f, 6617.072f, 10.897f),
+                new Vector3(-266.353f, 6647.833f, 5.497f),
+                // Chumash 1
+                new Vector3(-3429.836f, 947.696f, 10.106f),
+                new Vector3(-3424.115f, 985.415f, 6.406f),
             };
 
             // Selling position
