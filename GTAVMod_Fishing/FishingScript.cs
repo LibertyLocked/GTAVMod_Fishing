@@ -23,7 +23,7 @@ namespace GTAVMod_Fishing
         int fishingButton;
         bool entityCleanup = true;
         int backpackSize = 30;
-        int chanceNothing = 5, chanceJunk = 35, chanceRodBreak = 3;
+        int chanceNothing = 5, chanceJunk = 35, chanceRodBreak = 4;
         int waitTime = 5;
 
         UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
@@ -392,7 +392,7 @@ namespace GTAVMod_Fishing
             entityCleanup = settings.GetValue("Config", "EntityCleanup", true);
             chanceNothing = settings.GetValue("Config", "ChanceNothing", 5);
             chanceJunk = settings.GetValue("Config", "ChanceJunk", 35);
-            chanceRodBreak = settings.GetValue("Config", "ChanceRodBreak", 3);
+            chanceRodBreak = settings.GetValue("Config", "ChanceRodBreak", 4);
             backpackSize = settings.GetValue("Config", "BackpackSize", 30);
             waitTime = settings.GetValue("Config", "WaitTime", 5);
         }

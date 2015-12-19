@@ -1,0 +1,26 @@
+﻿v0.2: 
+Better entity spawn with physics. Added more fish and fun items.
+v0.2.1: 
+Added actual fish models.
+v0.2.2: 
+Fixed prop being stuck (sort of). Added more fish and items.
+v0.2.3: 
+Added boat fishing. Added controller support. Added more fish and items.
+v0.2.4: 
+Fixed issues with Shift key. Fixed certain items being static. Added more fish and items.
+v0.2.5: 
+Implemented backpack size limit. Added more configurable parameters. Implemented item rarities. Added 2 items with special effects.
+v0.2.6: 
+Updated for Script Hook V .NET v1.0
+v0.2.7: 
+Fixed selling issue with FishAnywhere turned on. Added 3 items. Mod is now being distributed as a .dll file (for the upcoming minigame update)
+v0.2.8: 
+Updated for Script Hook V .NET v2.1
+v0.3.0: 
+Added ability to buy fishing rods. Added 3 items.
+v0.4.0:
+Moved cat and pigeon to junk category
+Player can have more than one fishing rod in inventory
+Fishing rods are now breakable
+Added more fishing locations!
+Added more items (of course)
