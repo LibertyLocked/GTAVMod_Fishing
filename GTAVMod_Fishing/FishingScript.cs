@@ -258,12 +258,12 @@ namespace GTAVMod_Fishing
             };
 
             SpecialItems = new FishItem[]
-            { // count: 50
+            { // count: 54
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
-                //new FishItem("test", new PedHash[]{PedHash.Jesus01},
-                //    Rarity.Legendary, new ItemAction(x => ((Ped)x).Task.ChatTo(Game.Player.Character))),
+                //new FishItem("test", new VehicleHash[]{ VehicleHash.Submersible2 },
+                //    Rarity.Common, null),
                 // peds
                 new FishItem("Dead Hooker", new PedHash[]{PedHash.Hooker01SFY, PedHash.Hooker02SFY, PedHash.Hooker03SFY}, 
                     Rarity.Uncommon, ItemActions.KillPed),
@@ -273,9 +273,9 @@ namespace GTAVMod_Fishing
                     Rarity.Uncommon, ItemActions.KillPed),
                 new FishItem("Zombie", new PedHash[]{PedHash.Zombie01},
                     Rarity.Rare, new ItemAction((ent) => ((Ped)ent).Task.FightAgainst(Game.Player.Character))),
-                new FishItem("Pigeon", new PedHash[] { PedHash.Pigeon }, 
+                new FishItem("Pigeon", new PedHash[]{PedHash.Pigeon}, 
                     Rarity.Uncommon, new Vector3(38f, 38f, 7f), null),
-                new FishItem("Cat", new PedHash[] { PedHash.Cat }, 
+                new FishItem("Cat", new PedHash[]{PedHash.Cat}, 
                     Rarity.Uncommon, new Vector3(52f, 52f, 7f), ItemActions.CatEatsFish),
                 // vehs
                 new FishItem("Bike", new VehicleHash[]{VehicleHash.Bmx, VehicleHash.TriBike, VehicleHash.Cruiser, VehicleHash.Scorcher, VehicleHash.Fixter}, 
@@ -288,6 +288,8 @@ namespace GTAVMod_Fishing
                     Rarity.Uncommon, null),
                 new FishItem("Lawn Mower", new VehicleHash[]{VehicleHash.Mower},
                     Rarity.Uncommon, null),
+                new FishItem("Submersible", new VehicleHash[]{VehicleHash.Submersible, VehicleHash.Submersible2},
+                    Rarity.Legendary, null),
                 // props
                 new FishItem("Wallet", new string[]{"prop_ld_wallet_01", "prop_ld_wallet_02"},
                     Rarity.Common, delegate { Game.Player.Money += 100 + rng.Next(900);}),
@@ -365,6 +367,12 @@ namespace GTAVMod_Fishing
                     Rarity.Common, null),
                 new FishItem("TV", new string[]{"prop_tv_02", "prop_tv_04", "prop_tv_05", "prop_tv_06", "prop_tv_07"},
                     Rarity.Common, ItemActions.ShootTaserBullet),
+                new FishItem("Recycle Bin", new string[]{ "prop_recyclebin_02a" },
+                    Rarity.Common, null),
+                new FishItem("Road Cone", new string[]{"prop_roadcone01a", "prop_roadcone01b", "prop_roadcone01c", "prop_roadcone02a", "prop_roadcone02b", "prop_roadcone02c"},
+                    Rarity.Common, null),
+                new FishItem("Spy Cam", new string[]{"prop_spycam"},
+                    Rarity.Common, null),
             };
         }
 
