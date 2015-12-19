@@ -53,6 +53,20 @@ namespace GTAVMod_Fishing
             }
         }
 
+        public Fish RemoveRandomFish()
+        {
+            if (fishes.Count > 0)
+            {
+                Fish removedFish = fishes[new Random().Next(CurrSize)];
+                fishes.Remove(removedFish);
+                return removedFish;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public int SellAllFish()
         {
             int sellMoney = 0;

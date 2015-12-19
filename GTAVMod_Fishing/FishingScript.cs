@@ -30,7 +30,7 @@ namespace GTAVMod_Fishing
         Prop fishingRod;
         LocationHelper loc;
         bool isFishing = false;
-        PlayerInventory inventory;
+        public static PlayerInventory inventory;
         Fish[] NormalFishes;
         FishItem[] SpecialItems;
         Ped playerPed;
@@ -233,20 +233,18 @@ namespace GTAVMod_Fishing
         void SetupAvailableItems()
         {
             NormalFishes = new Fish[] 
-            { // count: 23
-                new Fish("Shrimp", 1, Rarity.Common),
+            { // count: 21
+                new Fish("Arroyo Chub", 5, Rarity.Common),
                 new Fish("Spotted Bay Bass", 10, Rarity.Common),
-                new Fish("Pigeon", 10, new PedHash[] { PedHash.Pigeon }, Rarity.Common, new Vector3(38f, 38f, 7f), null),
-                new Fish("Cat", 10, new PedHash[] { PedHash.Cat }, Rarity.Common, new Vector3(52f, 52f, 7f), null),
                 new Fish("Blue Rockfish", 15, Rarity.Common),
                 new Fish("Barred Sand Bass", 20, Rarity.Common),
-                new Fish("Barred Surf Perch", 20, Rarity.Common),
+                new Fish("Barred Surf Perch", 25, Rarity.Common),
                 new Fish("Kelp Bass", 30, Rarity.Common),
                 new Fish("White Sea Bass", 40, Rarity.Common),
                 new Fish("Spotfin Croaker", 45, Rarity.Common),
                 new Fish("California Halibut", 50, Rarity.Common),
                 new Fish("Pacific Barracuda", 60, Rarity.Common),
-                new Fish("Swordfish", 70, Rarity.Common),
+                new Fish("Swordfish", 65, Rarity.Common),
                 new Fish("California Corbina", 70, Rarity.Common),
                 new Fish("Red Lionfish", 80, Rarity.Common),
                 new Fish("Black Rockfish", 85, Rarity.Common),
@@ -255,12 +253,12 @@ namespace GTAVMod_Fishing
                 new Fish("Steelhead", 120, Rarity.Common),
                 new Fish("Walleye Surfperch", 200, Rarity.Common),
                 new Fish("Goldfish", 400, Rarity.Common),
-                new Fish("Dolphin", 700, new PedHash[] { PedHash.Dolphin }, Rarity.Exceptional, null),
+                new Fish("Dolphin", 700, new PedHash[] { PedHash.Dolphin }, Rarity.Legendary, null),
                 new Fish("Tiger Shark", 800, new PedHash[] { PedHash.TigerShark }, Rarity.Legendary, null),
             };
 
             SpecialItems = new FishItem[]
-            { // count: 48
+            { // count: 50
                 // no model
                 new FishItem("Condom", 
                     Rarity.Common, null),
@@ -274,7 +272,11 @@ namespace GTAVMod_Fishing
                 new FishItem("Dead Cop", new PedHash[]{PedHash.Cop01SFY, PedHash.Cop01SMY},
                     Rarity.Uncommon, ItemActions.KillPed),
                 new FishItem("Zombie", new PedHash[]{PedHash.Zombie01},
-                    Rarity.Rare, new ItemAction(x => ((Ped)x).Task.FightAgainst(Game.Player.Character))),
+                    Rarity.Rare, new ItemAction((ent) => ((Ped)ent).Task.FightAgainst(Game.Player.Character))),
+                new FishItem("Pigeon", new PedHash[] { PedHash.Pigeon }, 
+                    Rarity.Uncommon, new Vector3(38f, 38f, 7f), null),
+                new FishItem("Cat", new PedHash[] { PedHash.Cat }, 
+                    Rarity.Uncommon, new Vector3(52f, 52f, 7f), ItemActions.CatEatsFish),
                 // vehs
                 new FishItem("Bike", new VehicleHash[]{VehicleHash.Bmx, VehicleHash.TriBike, VehicleHash.Cruiser, VehicleHash.Scorcher, VehicleHash.Fixter}, 
                     Rarity.Uncommon, null),
@@ -350,7 +352,7 @@ namespace GTAVMod_Fishing
                 new FishItem("Battery", new string[]{"prop_battery_01"},
                     Rarity.Common, ItemActions.ShootTaserBullet),
                 new FishItem("Explosive Crow", new PedHash[]{PedHash.Crow},
-                    Rarity.Common, new ItemAction(x => World.AddExplosion(x.Position, ExplosionType.Propane, 1f, 1f))),
+                    Rarity.Common, new ItemAction((ent) => World.AddExplosion(ent.Position, ExplosionType.Propane, 1f, 1f))),
                 new FishItem("Artifact", new string[]{"prop_artifact_01"},
                     Rarity.Rare, delegate { Game.Player.Money += 2000; }),
                 new FishItem("Bowling Ball", new string[]{"prop_bowling_ball"},
@@ -400,10 +402,10 @@ namespace GTAVMod_Fishing
 
         public static void PostAnimation(string animBase, string animName, float speed, int duration, bool lastAnim, float playbackRate)
         {
-            postAction = delegate
+            PostActionQueue(delegate
             {
                 Game.Player.Character.Task.PlayAnimation(animBase, animName, speed, duration, lastAnim, playbackRate);
-            };
+            });
         }
     }
 }

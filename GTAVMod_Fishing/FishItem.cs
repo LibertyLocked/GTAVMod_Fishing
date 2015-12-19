@@ -71,7 +71,7 @@ namespace GTAVMod_Fishing
             this.velocityMultiplier = velocityMultiplier;
         }
 
-        public Entity Spawn()
+        public virtual Entity Spawn()
         {
             Entity ent = null;
             if (EntityType != EntityType.None)
@@ -113,8 +113,8 @@ namespace GTAVMod_Fishing
 
                 if (Globals.DebugMode)
                 {
-                    UI.Notify("Pos " + ent.Position.ToString());
-                    UI.Notify("Vel " + ent.Velocity.ToString());
+                    //UI.Notify("Pos " + ent.Position.ToString());
+                    //UI.Notify("Vel " + ent.Velocity.ToString());
                 }
             }
 

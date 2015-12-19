@@ -10,6 +10,12 @@ namespace GTAVMod_Fishing
 {
     public class Fish : FishItem
     {
+        public Entity Entity
+        {
+            get;
+            private set;
+        }
+
         public int Price
         {
             get;
@@ -28,6 +34,12 @@ namespace GTAVMod_Fishing
             : base(name, pedHashes, rarity, velocityMultiplier, action)
         {
             Price = price;
+        }
+
+        public override Entity Spawn()
+        {
+            Entity = base.Spawn();
+            return Entity;
         }
     }
 

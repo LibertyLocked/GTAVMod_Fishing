@@ -40,6 +40,19 @@ namespace GTAVMod_Fishing
                 0, true, stunGunModel.Hash, attacker, true, true, 1f);
             attacker.Delete();
         }
+
+        public static void CatEatsFish(Entity ent)
+        {
+            Fish eatenFish = FishingScript.inventory.RemoveRandomFish();
+            if (eatenFish != null)
+            {
+                UI.Notify("Cat has eaten your ~r~" + eatenFish.Name + " ~g~$" + eatenFish.Price);
+                if (eatenFish.Entity != null)
+                {
+                    eatenFish.Entity.Delete();
+                }
+            }
+        }
     }
 
 }
