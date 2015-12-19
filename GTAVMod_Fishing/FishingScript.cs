@@ -23,14 +23,13 @@ namespace GTAVMod_Fishing
         int fishingButton;
         bool entityCleanup = true;
         int backpackSize = 30;
-        int chanceNothing = 5, chanceJunk = 35;
+        int chanceNothing = 5, chanceJunk = 35, chanceRodBreak = 3;
         int waitTime = 5;
 
         UIText promtText = new UIText("", new Point(50, 50), 0.5f, Color.White);
         Prop fishingRod;
         LocationHelper loc;
         bool isFishing = false;
-        public static PlayerInventory inventory;
         Fish[] NormalFishes;
         FishItem[] SpecialItems;
         Ped playerPed;
@@ -41,6 +40,7 @@ namespace GTAVMod_Fishing
         bool creditsShown = false;
         byte[] creditsBytes1, creditsBytes2;
 
+        public static PlayerInventory inventory;
         static Action postAction = null; // action to be performed when fishing stopped
 
         public FishingScript()
@@ -66,9 +66,10 @@ namespace GTAVMod_Fishing
             {
                 if (Function.Call<bool>(Hash.IS_DISABLED_CONTROL_JUST_PRESSED, 2, fishingButton)) FishingKeyPressed();
 
-                if ((loc.IsEntityInStoreArea(playerPed)) && !inventory.HasFishingRod)
+                if ((loc.IsEntityInStoreArea(playerPed)))
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to buy a fishing rod"
+                        + "You have " + inventory.FishingRodsCount + " fishing rods"
                         + "\nCost: $10";
                     promtText.Draw();
                 }
@@ -79,6 +80,7 @@ namespace GTAVMod_Fishing
                     if (inventory.HasFishingRod)
                     {
                         promtText.Caption = "Press " + fishingKey.ToString() + " to fish"
+                            + "\nFishing rods: " + inventory.FishingRodsCount
                             + "\nBackpack: " + inventory.CurrSize + "/" + inventory.MaxSize;
                     }
                     else
@@ -108,7 +110,14 @@ namespace GTAVMod_Fishing
 
         void FishingKeyPressed()
         {
-            if (inventory.HasFishingRod)
+            // buy a fishing rod
+            if (loc.IsEntityInStoreArea(playerPed) && Game.Player.Money >= 10)
+            {
+                Game.Player.Money -= 10;
+                inventory.AddFishingRod(new FishingRod(10));
+                UI.ShowSubtitle("You bought a regular fishing rod");
+            }
+            else if (inventory.HasFishingRod)
             {
                 if (loc.IsEntityInSellingArea(Game.Player.Character) && CanPlayerFish(Game.Player))
                 {
@@ -124,6 +133,7 @@ namespace GTAVMod_Fishing
                         UI.ShowSubtitle("You haven't caught any fish yet!");
                     }
                     CleanUpEntities();
+                    
                 }
                 else if (loc.IsEntityInFishingArea(Game.Player.Character) || loc.IsPlayerNearBoat(Game.Player) && CanPlayerFish(Game.Player))
                 {
@@ -135,16 +145,6 @@ namespace GTAVMod_Fishing
                     {
                         StartFishing();
                     }
-                }
-            }
-            else
-            {
-                // buy a fishing rod
-                if (loc.IsEntityInStoreArea(playerPed))
-                {
-                    Game.Player.Money -= 10;
-                    inventory.AddFishingRod(new FishingRod(10));
-                    UI.ShowSubtitle("You bought a regular fishing rod");
                 }
             }
         }
@@ -162,6 +162,13 @@ namespace GTAVMod_Fishing
             {
                 postAction();
                 postAction = null;
+            }
+
+            // Chance of breaking fishing rod
+            if (new Random().Next(100) < chanceRodBreak)
+            {
+                UI.Notify("~r~Your fishing rod broke!");
+                inventory.RemoveFishingRod();
             }
         }
 
@@ -385,6 +392,7 @@ namespace GTAVMod_Fishing
             entityCleanup = settings.GetValue("Config", "EntityCleanup", true);
             chanceNothing = settings.GetValue("Config", "ChanceNothing", 5);
             chanceJunk = settings.GetValue("Config", "ChanceJunk", 35);
+            chanceRodBreak = settings.GetValue("Config", "ChanceRodBreak", 3);
             backpackSize = settings.GetValue("Config", "BackpackSize", 30);
             waitTime = settings.GetValue("Config", "WaitTime", 5);
         }
