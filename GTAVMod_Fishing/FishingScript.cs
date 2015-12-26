@@ -69,7 +69,7 @@ namespace GTAVMod_Fishing
                 if ((loc.IsEntityInStoreArea(playerPed)))
                 {
                     promtText.Caption = "Press " + fishingKey.ToString() + " to buy a fishing rod"
-                        + "You have " + inventory.FishingRodsCount + " fishing rods"
+                        + "\nYou have " + inventory.FishingRodsCount + " fishing rods"
                         + "\nCost: $10";
                     promtText.Draw();
                 }
