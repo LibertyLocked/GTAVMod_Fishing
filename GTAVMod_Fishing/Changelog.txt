@@ -24,3 +24,5 @@ Player can have more than one fishing rod in inventory
 Fishing rods are now breakable
 Added more fishing locations!
 Added more items (of course)
+v0.4.1:
+Updated ScriptHookDotNet dependency
