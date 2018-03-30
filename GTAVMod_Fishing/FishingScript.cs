@@ -193,7 +193,7 @@ namespace GTAVMod_Fishing
             if (!creditsShown)
             {
                 UI.Notify(Encoding.ASCII.GetString(creditsBytes1) + Globals._SCRIPT_VERSION + Encoding.ASCII.GetString(creditsBytes2));
-                UI.Notify("Work In Progress. Final version may differ.");
+                //UI.Notify("Work In Progress. Final version may differ.");
                 creditsShown = true;
             }
         }

@@ -184,3 +184,6 @@ FakesAssemblies/
 
 # Xamarin Studio files
 *.userprefs
+
+.vs
+
